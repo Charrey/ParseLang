@@ -105,4 +105,31 @@ public class NodeList extends ASTElem {
     public ASTElem[] toArray(ASTElem[] a) {
         return nodeList.toArray(a);
     }
+
+    public void addAll(NodeList tempResultList) {
+        nodeList.addAll(tempResultList.nodeList);
+    }
+
+    public List<ASTElem> asList() {
+        return nodeList;
+    }
+
+    public String pp(int indent) {
+        String prefix = new String(new char[indent]).replace("\0", "\t");
+
+        StringBuilder sb = new StringBuilder(prefix).append("[");
+        for (ASTElem n : nodeList) {
+            sb.append("\n").append(n.pp(indent + 1));
+        }
+        return sb.append(prefix).append("\n]").toString();
+    }
+
+    @Override
+    String parseString() {
+        StringBuilder sb = new StringBuilder();
+        for (ASTElem child : nodeList) {
+            sb.append(child.parseString());
+        }
+        return sb.toString();
+    }
 }

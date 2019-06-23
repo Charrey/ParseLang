@@ -1,6 +1,7 @@
 package parselang.interpreter;
 
 import parselang.filereader.FileReader;
+import parselang.parser.exceptions.ParseErrorException;
 import parselang.parser.ParseRuleStorage;
 import parselang.parser.Parser;
 
@@ -11,13 +12,20 @@ public class Interpreter {
 
     private static FileReader fileReader = new FileReader();
     private static Parser parser = new Parser();
-    private static ParseRuleStorage storage;
+    private static ParseRuleStorage storage = new ParseRuleStorage();
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ParseErrorException {
         String fileName = args[0];
+        String command = args[1];
         String contentsToExecute = fileReader.readStringFromFile(fileName);
         Path rootPath = fileReader.seekRoot(fileName);
+
         String highLevelContents = fileReader.readRootFile(rootPath);
-        parser.readFile(storage, highLevelContents);
+
+        parser.readHighLevel(storage, highLevelContents);
+        parser.readFile(storage, contentsToExecute);
+
+        //AST parsedCommand = parser.readCommand(storage, command);
+        //System.out.println(parsedCommand.evaluate());
     }
 }
