@@ -25,6 +25,7 @@ public class FileReader {
                 throw new IOException("Project root not found");
             }
         }
+        
         return toCheck;
     }
 
