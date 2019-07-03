@@ -17,7 +17,7 @@ public class FileReader {
     }
 
 
-    
+
     public Path seekRoot(String filename) throws IOException {
         Path toCheck = Paths.get(filename).getParent();
         while (!containsHighLevel(toCheck)) {
