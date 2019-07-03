@@ -1,31 +1,33 @@
 package parselang.parser;
 
 import parselang.parser.data.AST;
-import parselang.parser.data.ASTElem;
 import parselang.parser.data.ParseRule;
 
 public class ParseResult {
 
+    private String parsed;
     private String remaining;
-    private ASTElem tree;
+    private AST tree;
 
 
-    ParseResult(String remaining, ASTElem tree) {
+    ParseResult(String parsed, String remaining, AST tree) {
+        this.parsed = parsed;
         this.remaining = remaining;
         this.tree = tree;
     }
 
-    ParseResult(String remaining, ASTElem tree, ParseRule ruleApplied) {
+    ParseResult(String parsed, String remaining, AST tree, ParseRule ruleApplied) {
+        this.parsed = parsed;
         this.remaining = remaining;
         this.tree = tree;
-        ((AST)this.tree).setRuleApplied(ruleApplied);
+        this.tree.setRuleApplied(ruleApplied);
     }
 
     String getRemaining() {
         return remaining;
     }
 
-    ASTElem getTree() {
+    AST getTree() {
         return tree;
     }
 

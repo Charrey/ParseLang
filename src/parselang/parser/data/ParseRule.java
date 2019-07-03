@@ -100,4 +100,20 @@ public class ParseRule {
 
         return Objects.equals(evaluator, ((ParseRule) other).evaluator);
     }
+
+    public boolean hasRHS() {
+        return !rhs.isEmpty();
+    }
+
+    public Node lastRHS() {
+        return rhs.get(rhs.size() - 1);
+    }
+
+    public List<Node> drop() {
+        List<Node> res = new LinkedList<>();
+        for (int i = 0; i < rhs.size() -1; i++) {
+            res.add(rhs.get(i));
+        }
+        return res;
+    }
 }
