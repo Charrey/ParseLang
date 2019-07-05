@@ -5,28 +5,32 @@ import parselang.parser.data.ParseRule;
 
 public class ParseResult {
 
-    private String parsed;
-    private String remaining;
+    private final int notYetParsed;
+    private final String original;
     private AST tree;
 
 
 
 
-    ParseResult(String parsed, String remaining, AST tree) {
-        this.parsed = parsed;
-        this.remaining = remaining;
+    ParseResult(String original, int notYetParsed, AST tree) {
+        this.original = original;
+        this.notYetParsed = notYetParsed;
         this.tree = tree;
     }
 
-    ParseResult(String parsed, String remaining, AST tree, ParseRule ruleApplied) {
-        this.parsed = parsed;
-        this.remaining = remaining;
+    ParseResult(String original, int notYetParsed, AST tree, ParseRule ruleApplied) {
+        this.original = original;
+        this.notYetParsed = notYetParsed;
         this.tree = tree;
         this.tree.setRuleApplied(ruleApplied);
     }
 
     public String getRemaining() {
-        return remaining;
+        if (notYetParsed == original.length()) {
+            return "";
+        } else {
+            return original.substring(notYetParsed);
+        }
     }
 
     AST getTree() {
@@ -34,10 +38,14 @@ public class ParseResult {
     }
 
     public String toString() {
-        return "<\"" +  (remaining.replaceAll("(\r\n)|(\n)", "\\\\n")).replaceAll("\"", "\\\\\"") + "\", \n" + tree + ">";
+        return "<\"" +  (getRemaining().replaceAll("(\r\n)|(\n)", "\\\\n")).replaceAll("\"", "\\\\\"") + "\", \n" + tree + ">";
     }
 
     public String getParsed() {
-        return parsed;
+        return original.substring(0, notYetParsed);
+    }
+
+    public int getRemainingIndex() {
+        return notYetParsed;
     }
 }

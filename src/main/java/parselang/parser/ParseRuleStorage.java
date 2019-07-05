@@ -1,6 +1,7 @@
 package parselang.parser;
 
 import parselang.languages.Language;
+import parselang.languages.ParseLangV1;
 import parselang.parser.data.*;
 
 import java.util.*;
@@ -14,6 +15,13 @@ public class ParseRuleStorage {
     private Map<NonTerminal, Map<Character, List<ParseRule>>> rulesPlus = new HashMap<>();
 
 
+    public void prepare(Language lang) {
+        setDefaults(lang);
+        calculateFirst();
+        calculateFollow(new NonTerminal("HighLevel"));
+        calculateFirstPlus();
+        removeLeftRecursion();
+    }
 
     private void addRule(ParseRule rule) {
         addRules(rule.convertStarNodes(), Direction.RIGHT);
@@ -36,12 +44,10 @@ public class ParseRuleStorage {
 
     List<ParseRule> getByNonTerminal(NonTerminal nonTerminal, Character startsWith) {
         if (rulesPlus.containsKey(nonTerminal)) {
-            LinkedList<ParseRule> res = new LinkedList<>();
             if (rulesPlus.get(nonTerminal).containsKey(startsWith)) {
-                res.addAll(rulesPlus.get(nonTerminal).get(startsWith));
+                return rulesPlus.get(nonTerminal).get(startsWith);
             }
-            res.addAll(rulesPlus.get(nonTerminal).getOrDefault(null, Collections.emptyList()));
-            return res;
+            return Collections.emptyList();
         } else {
             System.out.println("Warning! No such rule! => " + nonTerminal.getName() + ", starts with: \"" + startsWith + "\"");
             return new LinkedList<>();
@@ -173,6 +179,7 @@ public class ParseRuleStorage {
                 for (Character character : firstOfRhs) {
                     rulesPlus.get(nonTerminal).computeIfAbsent(character, character1 -> new LinkedList<>());
                     rulesPlus.get(nonTerminal).get(character).add(rule);
+                    rulesPlus.get(nonTerminal).get(character).addAll(rulesPlus.get(nonTerminal).getOrDefault(null, Collections.emptyList()));
                 }
                 if (firstOfRhs.contains(null)) {
                     for (Character character : follow.get(nonTerminal)) {

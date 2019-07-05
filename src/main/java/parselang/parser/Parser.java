@@ -12,12 +12,8 @@ public class Parser {
 
 
     public ParseResult readFile(ParseRuleStorage storage, String fileContents) throws ParseErrorException {
-        storage.setDefaults(new ParseLangV1());
-        storage.calculateFirst();
-        storage.calculateFollow(new NonTerminal("HighLevel"));
-        storage.calculateFirstPlus();
-        storage.removeLeftRecursion();
-        ParseResult parsed = parse(fileContents, fileContents, new NonTerminal("HighLevel"), storage);
+        //storage.prepare(new ParseLangV1());
+        ParseResult parsed = parse(fileContents, 0, new NonTerminal("HighLevel"), storage);
         int remainingLength = parsed.getRemaining().length();
         if (remainingLength > 0) {
             throw new ParseErrorException(fileContents, fileContents.length() - remainingLength);
@@ -26,7 +22,7 @@ public class Parser {
     }
 
     public AST readCommand(ParseRuleStorage storage, String command) throws ParseErrorException {
-        ParseResult parsed = parse(command, command, new NonTerminal("Expression"), storage);
+        ParseResult parsed = parse(command, 0, new NonTerminal("Expression"), storage);
         System.out.println(parsed);
         return parsed.getTree();
     }
@@ -35,47 +31,47 @@ public class Parser {
 //
 //    }
 
-    private ParseResult parse(String originalString, String toParse, Node toParseTo, ParseRuleStorage storage) throws ParseErrorException  {
+    private ParseResult parse(String originalString, int notYetParsed, Node toParseTo, ParseRuleStorage storage) throws ParseErrorException  {
          if (toParseTo instanceof NonTerminal) {
             NonTerminal toParseToNT = (NonTerminal) toParseTo;
-            for (ParseRule ruleToTry : storage.getByNonTerminal(toParseToNT, toParse.isEmpty()? null : toParse.charAt(0))) {
+            for (ParseRule ruleToTry : storage.getByNonTerminal(toParseToNT, notYetParsed == originalString.length() ? null : originalString.charAt(notYetParsed))) {
                 try {
-                    return parseWithRule(originalString, toParse, ruleToTry, storage);
+                    return parseWithRule(originalString, notYetParsed, ruleToTry, storage);
                 } catch (ParseErrorException ignored) {}
             }
 
-            throw new ParseErrorException(originalString, originalString.length() - toParse.length());
+            throw new ParseErrorException(originalString, notYetParsed);
         } else if (toParseTo instanceof Terminal) {
-            return parseTerminal(originalString, toParse, (Terminal) toParseTo);
+            return parseTerminal(originalString, notYetParsed, (Terminal) toParseTo);
         }
         else {
             throw new UnsupportedOperationException("Not yet implemented");
         }
     }
 
-    private ParseResult parseTerminal(String originalString, String toParse, Terminal toParseTo) throws ParseErrorException {
+    private ParseResult parseTerminal(String originalString, int notYetParsed, Terminal toParseTo) throws ParseErrorException {
         int size = toParseTo.getValue().length();
-        if (toParse.startsWith(toParseTo.getValue())) {
+        if (originalString.charAt(notYetParsed) == toParseTo.getValue().charAt(0)) {
             AST tree = new AST(toParseTo);
-            tree.setParsed(toParse.substring(0, size));
-            return new ParseResult(toParse.substring(0, size), toParse.substring(size), tree);
+            tree.setParsed(toParseTo.getValue());
+            return new ParseResult(originalString, notYetParsed + toParseTo.getValue().length(), tree);
         } else {
-            throw new ParseErrorException(originalString, originalString.length() - toParse.length());
+            throw new ParseErrorException(originalString, notYetParsed);
         }
     }
 
-    private ParseResult parseWithRule(String originalString, String toParse, ParseRule ruleToTry, ParseRuleStorage storage) throws ParseErrorException {
-        String remaining = toParse;
+    private ParseResult parseWithRule(String originalString, int notYetParsed, ParseRule ruleToTry, ParseRuleStorage storage) throws ParseErrorException {
+        int newlyParsed = notYetParsed;
         AST res = new AST(ruleToTry.getLHS(), storage);
         for (Node node : ruleToTry.getRHS()) {
             if (node instanceof NonTerminal || node instanceof Terminal) {
-                ParseResult subResult = parse(originalString, remaining, node, storage);
-                remaining = subResult.getRemaining();
+                ParseResult subResult = parse(originalString, newlyParsed, node, storage);
+                newlyParsed = subResult.getRemainingIndex();
                 res.addChild(subResult.getTree());
             }
         }
-        String parsed = toParse.substring(0, toParse.length() - remaining.length());
+        String parsed = originalString.substring(notYetParsed, newlyParsed);
         res.setParsed(parsed);
-        return new ParseResult(parsed, remaining, res, ruleToTry);
+        return new ParseResult(parsed, newlyParsed, res, ruleToTry);
     }
 }

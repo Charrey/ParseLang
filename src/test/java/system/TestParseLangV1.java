@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import parselang.filereader.FileReader;
 import parselang.interpreter.Interpreter;
+import parselang.languages.ParseLangV1;
 import parselang.parser.ParseResult;
 import parselang.parser.ParseRuleStorage;
 import parselang.parser.Parser;
@@ -24,16 +25,20 @@ public class TestParseLangV1 {
     }
 
 
+    ParseRuleStorage storage;
+    Parser parser;
+
     @Before
     public void setup() {
         fileReader = new FileReader();
+        storage = new ParseRuleStorage();
+        storage.prepare(new ParseLangV1());
+        parser = new Parser();
     }
 
     @Test
     public void testEmpty() throws IOException, ParseErrorException {
         String contentsToExecute = readString("emptyfile.plang");
-        ParseRuleStorage storage = new ParseRuleStorage();
-        Parser parser = new Parser();
         ParseResult result = parser.readFile(storage, contentsToExecute);
         assertEquals("", result.getRemaining());
         assertEquals("", result.getParsed());
@@ -42,10 +47,7 @@ public class TestParseLangV1 {
     @Test
     public void testEmpty100Times() throws IOException, ParseErrorException {
         String contentsToExecute = readString("test100empty.plang");
-        ParseRuleStorage storage = new ParseRuleStorage();
-        Parser parser = new Parser();
         ParseResult result = parser.readFile(storage, contentsToExecute);
-        //System.out.println(result);
         assertEquals("", result.getRemaining());
         assertEquals(contentsToExecute, result.getParsed());
     }
@@ -53,8 +55,6 @@ public class TestParseLangV1 {
     @Test
     public void testEmptyDecl() throws IOException, ParseErrorException {
         String contentsToExecute = readString("emptydecl.plang");
-        ParseRuleStorage storage = new ParseRuleStorage();
-        Parser parser = new Parser();
         ParseResult result = parser.readFile(storage, contentsToExecute);
         assertEquals("", result.getRemaining());
         assertEquals(contentsToExecute, result.getParsed());
@@ -63,8 +63,6 @@ public class TestParseLangV1 {
     @Test
     public void testReturnNumber1() throws IOException, ParseErrorException {
         String contentsToExecute = readString("number1.plang");
-        ParseRuleStorage storage = new ParseRuleStorage();
-        Parser parser = new Parser();
         ParseResult result = parser.readFile(storage, contentsToExecute);
         assertEquals("", result.getRemaining());
         assertEquals(contentsToExecute, result.getParsed());
@@ -73,8 +71,6 @@ public class TestParseLangV1 {
     @Test
     public void testReturnNumber2() throws IOException, ParseErrorException {
         String contentsToExecute = readString("number2.plang");
-        ParseRuleStorage storage = new ParseRuleStorage();
-        Parser parser = new Parser();
         ParseResult result = parser.readFile(storage, contentsToExecute);
         assertEquals("", result.getRemaining());
         assertEquals(contentsToExecute, result.getParsed());
