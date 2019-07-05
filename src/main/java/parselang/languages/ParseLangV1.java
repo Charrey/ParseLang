@@ -73,15 +73,17 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("UpperCase").addRhs(term("Z")));
 
         rules.add(new ParseRule("Number").addRhs(term("0")));
-        rules.add(new ParseRule("Number").addRhs(term("1")));
-        rules.add(new ParseRule("Number").addRhs(term("2")));
-        rules.add(new ParseRule("Number").addRhs(term("3")));
-        rules.add(new ParseRule("Number").addRhs(term("4")));
-        rules.add(new ParseRule("Number").addRhs(term("5")));
-        rules.add(new ParseRule("Number").addRhs(term("6")));
-        rules.add(new ParseRule("Number").addRhs(term("7")));
-        rules.add(new ParseRule("Number").addRhs(term("8")));
-        rules.add(new ParseRule("Number").addRhs(term("9")));
+        rules.add(new ParseRule("NonZeroNumber").addRhs(term("1")));
+        rules.add(new ParseRule("NonZeroNumber").addRhs(term("2")));
+        rules.add(new ParseRule("NonZeroNumber").addRhs(term("3")));
+        rules.add(new ParseRule("NonZeroNumber").addRhs(term("4")));
+        rules.add(new ParseRule("NonZeroNumber").addRhs(term("5")));
+        rules.add(new ParseRule("NonZeroNumber").addRhs(term("6")));
+        rules.add(new ParseRule("NonZeroNumber").addRhs(term("7")));
+        rules.add(new ParseRule("NonZeroNumber").addRhs(term("8")));
+        rules.add(new ParseRule("NonZeroNumber").addRhs(term("9")));
+        rules.add(new ParseRule("Number").addRhs(nonTerm("NonZeroNumber")));
+
 
         rules.add(new ParseRule("UpperOrLowerCase").addRhs(nonTerm("LowerCase")));
         rules.add(new ParseRule("UpperOrLowerCase").addRhs(nonTerm("UpperCase")));
@@ -120,6 +122,14 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("Comparator").addRhs(term(">")));
 
         rules.add(new ParseRule("Sentence").addRhs(term("No")));
+
+        rules.add(new ParseRule("NumberLiteral").addRhs(term("0")));
+        rules.add(new ParseRule("NumberLiteral").addRhs(nonTerm("NonZeroNumber"), star(nonTerm("Number"))));
+
+        rules.add(new ParseRule("PowerExpression").addRhs(nonTerm("Expression"), term("^"), nonTerm("Expression")));
+
+        rules.add(new ParseRule("Expression").addRhs(nonTerm("PowerExpression")));
+        rules.add(new ParseRule("Expression").addRhs(nonTerm("NumberLiteral")));
 
         rules.add(new ParseRule("Declaration").addRhs(
                 nonTerm("NonTerminal"),

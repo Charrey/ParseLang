@@ -2,6 +2,7 @@ package parselang.filereader;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,7 +16,12 @@ public class FileReader {
         String data = new String(Files.readAllBytes(Paths.get(fileName)));
         return data;
     }
- 
+
+    public String readStringFromFile(URL url) throws IOException {
+        String data = new String(Files.readAllBytes(Paths.get(url.getPath())));
+        return data;
+    }
+
 
 
     public Path seekRoot(String filename) throws IOException {

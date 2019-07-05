@@ -69,7 +69,7 @@ public class AST extends ASTElem implements Evaluator {
 
         StringBuilder sb = new StringBuilder(prefix);
 
-        String line = padRight(root.toString(), 100 - (indent*4));
+        String line = padRight(root.toString(), 1000 - (indent*4));
         if (ruleApplied != null) {
             line += ruleApplied.toString();
         }

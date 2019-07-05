@@ -10,6 +10,8 @@ public class ParseResult {
     private AST tree;
 
 
+
+
     ParseResult(String parsed, String remaining, AST tree) {
         this.parsed = parsed;
         this.remaining = remaining;
@@ -23,7 +25,7 @@ public class ParseResult {
         this.tree.setRuleApplied(ruleApplied);
     }
 
-    String getRemaining() {
+    public String getRemaining() {
         return remaining;
     }
 
@@ -33,5 +35,9 @@ public class ParseResult {
 
     public String toString() {
         return "<\"" +  (remaining.replaceAll("(\r\n)|(\n)", "\\\\n")).replaceAll("\"", "\\\\\"") + "\", \n" + tree + ">";
+    }
+
+    public String getParsed() {
+        return parsed;
     }
 }
