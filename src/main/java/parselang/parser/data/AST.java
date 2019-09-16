@@ -11,10 +11,15 @@ public class AST extends ASTElem implements Evaluator {
     private final ParseRuleStorage storage;
     private ParseRule ruleApplied;
     private final Node root;
-    private String parsed;
+
+    private String originalString;
+
+    private int parsedFrom;
+    private int parsedTo;
+
     private List<ASTElem> children = new LinkedList<>();
 
-    public AST(Terminal root) {
+    public AST(Node root) {
         this(root, null);
     }
 
@@ -27,8 +32,10 @@ public class AST extends ASTElem implements Evaluator {
         this.storage = storage;
     }
 
-    public void setParsed(String parsed) {
-        this.parsed = parsed;
+    public void setParsed(String original, int from, int to) {
+        originalString = original;
+        parsedFrom = from;
+        parsedTo = to;
     }
 
     public void setRuleApplied(ParseRule rule) {

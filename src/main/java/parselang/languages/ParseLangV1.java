@@ -121,15 +121,23 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("Comparator").addRhs(term("<")));
         rules.add(new ParseRule("Comparator").addRhs(term(">")));
 
-        rules.add(new ParseRule("Sentence").addRhs(term("No")));
+        rules.add(new ParseRule("Sentence").addRhs(nonTerm("Expression")));
 
         rules.add(new ParseRule("NumberLiteral").addRhs(term("0")));
         rules.add(new ParseRule("NumberLiteral").addRhs(nonTerm("NonZeroNumber"), star(nonTerm("Number"))));
+        rules.add(new ParseRule("Expression").addRhs(nonTerm("ComparitiveExpression")));
 
-        rules.add(new ParseRule("PowerExpression").addRhs(nonTerm("Expression"), term("^"), nonTerm("Expression")));
+        rules.add(new ParseRule("ComparitiveExpression").addRhs(nonTerm("AdditiveExpression")));
+        rules.add(new ParseRule("AdditiveExpression").addRhs(nonTerm("MultiplicativeExpression"), star(term("+"), nonTerm("MultiplicativeExpression"))));
+        rules.add(new ParseRule("MultiplicativeExpression").addRhs(nonTerm("SimpleExpression"), star(term("*"), nonTerm("SimpleExpression"))));
+        rules.add(new ParseRule("SimpleExpression").addRhs(nonTerm("NumberLiteral")));
 
-        rules.add(new ParseRule("Expression").addRhs(nonTerm("PowerExpression")));
-        rules.add(new ParseRule("Expression").addRhs(nonTerm("NumberLiteral")));
+
+
+        //rules.add(new ParseRule("PlusExpression").addRhs(nonTerm("Expression"), ws(), term("+"), ws(), nonTerm("Expression")));
+        //rules.add(new ParseRule("PowerExpression").addRhs(nonTerm("Expression"), term("^"), nonTerm("Expression")));
+        //rules.add(new ParseRule("Expression").addRhs(nonTerm("PlusExpression")));
+        //rules.add(new ParseRule("Expression").addRhs(nonTerm("PowerExpression")));
 
         rules.add(new ParseRule("Declaration").addRhs(
                 nonTerm("NonTerminal"),
@@ -142,7 +150,7 @@ public class ParseLangV1 implements Language {
                 star(ws(), nonTerm("Token")),
                 ws(),
                 term("{"),
-                star(ws(), nonTerm("Sentence")),
+                star(ws(), nonTerm("Sentence"), term(";")),
                 ws(),
                 term("}")
         ));

@@ -1,7 +1,6 @@
 package parselang.parser;
 
 import parselang.languages.Language;
-import parselang.languages.ParseLangV1;
 import parselang.parser.data.*;
 
 import java.util.*;
@@ -12,7 +11,7 @@ public class ParseRuleStorage {
     private Map<NonTerminal, List<ParseRule>> rules = new HashMap<>();
     private Map<Node, Set<Character>> first = new HashMap<>();
     private Map<Node, Set<Character>> follow = new HashMap<>();
-    private Map<NonTerminal, Map<Character, List<ParseRule>>> rulesPlus = new HashMap<>();
+    private Map<NonTerminal, Map<Character, LinkedHashSet<ParseRule>>> rulesPlus = new HashMap<>();
 
 
     public void prepare(Language lang) {
@@ -42,15 +41,24 @@ public class ParseRuleStorage {
     }
 
 
-    List<ParseRule> getByNonTerminal(NonTerminal nonTerminal, Character startsWith) {
+    public LinkedHashSet<ParseRule> getByNonTerminal(Node nonTerminal, Character startsWith) {
+        if (!(nonTerminal instanceof NonTerminal)) {
+            return new LinkedHashSet<>();
+        }
+        if (((NonTerminal) nonTerminal).getName().contains("(Number*)")) {
+            System.out.println("foo");
+        }
+        if (((NonTerminal) nonTerminal).getName().contains("Number*")) {
+            System.out.println();
+        }
         if (rulesPlus.containsKey(nonTerminal)) {
             if (rulesPlus.get(nonTerminal).containsKey(startsWith)) {
                 return rulesPlus.get(nonTerminal).get(startsWith);
             }
-            return Collections.emptyList();
+            return rulesPlus.get(nonTerminal).getOrDefault(null, new LinkedHashSet<>());
         } else {
-            System.out.println("Warning! No such rule! => " + nonTerminal.getName() + ", starts with: \"" + startsWith + "\"");
-            return new LinkedList<>();
+            System.out.println("Warning! No such rule! => " + ((NonTerminal)nonTerminal).getName() + ", starts with: \"" + startsWith + "\"");
+            return new LinkedHashSet<>();
         }
     }
 
@@ -147,7 +155,11 @@ public class ParseRuleStorage {
                         continue;
                     }
                     for (Node rhsElem : rule.getRHS()) {
-                        first.get(nt).addAll(first.get(rhsElem));
+                        try {
+                            first.get(nt).addAll(first.get(rhsElem));
+                        } catch (Exception e) {
+                            System.out.println(":(");
+                        }
                         if (!first.get(rhsElem).contains(null)) {
                             break;
                         }
@@ -177,18 +189,29 @@ public class ParseRuleStorage {
             for (ParseRule rule : rules.get(nonTerminal)) {
                 Set<Character> firstOfRhs = firstOfList(rule.getRHS());
                 for (Character character : firstOfRhs) {
-                    rulesPlus.get(nonTerminal).computeIfAbsent(character, character1 -> new LinkedList<>());
+                    rulesPlus.get(nonTerminal).computeIfAbsent(character, character1 -> new LinkedHashSet<>());
                     rulesPlus.get(nonTerminal).get(character).add(rule);
-                    rulesPlus.get(nonTerminal).get(character).addAll(rulesPlus.get(nonTerminal).getOrDefault(null, Collections.emptyList()));
+                    rulesPlus.get(nonTerminal).get(character).addAll(rulesPlus.get(nonTerminal).getOrDefault(null, new LinkedHashSet<>()));
                 }
                 if (firstOfRhs.contains(null)) {
                     for (Character character : follow.get(nonTerminal)) {
-                        rulesPlus.get(nonTerminal).computeIfAbsent(character, character1 -> new LinkedList<>());
+                        rulesPlus.get(nonTerminal).computeIfAbsent(character, character1 -> new LinkedHashSet<>());
                         rulesPlus.get(nonTerminal).get(character).add(rule);
                     }
                 }
             }
         }
+
+        for (NonTerminal nonTerminal : getAllNonTerminals()) {
+            if (rulesPlus.get(nonTerminal).containsKey(null)) {
+                for (Map.Entry<Character, LinkedHashSet<ParseRule>> rule : rulesPlus.get(nonTerminal).entrySet()) {
+                    if (rule.getKey() != null) {
+                        rule.getValue().addAll(rulesPlus.get(nonTerminal).get(null));
+                    }
+                }
+            }
+        }
+        System.out.println();
     }
 
     private Set<Character> firstOfList(List<Node> list) {

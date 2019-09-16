@@ -3,16 +3,15 @@ package system;
 import org.junit.Before;
 import org.junit.Test;
 import parselang.filereader.FileReader;
-import parselang.interpreter.Interpreter;
 import parselang.languages.ParseLangV1;
 import parselang.parser.ParseResult;
 import parselang.parser.ParseRuleStorage;
-import parselang.parser.Parser;
 import parselang.parser.exceptions.ParseErrorException;
+import parselang.parser.parsers.Parser;
+import parselang.parser.parsers.RecursiveParser;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
 
@@ -33,7 +32,7 @@ public class TestParseLangV1 {
         fileReader = new FileReader();
         storage = new ParseRuleStorage();
         storage.prepare(new ParseLangV1());
-        parser = new Parser();
+        parser = new RecursiveParser();
     }
 
     @Test

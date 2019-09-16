@@ -1,0 +1,3 @@
+FooExpression < Expression = 'foo' {
+    1+2;
+}

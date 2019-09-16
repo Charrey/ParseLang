@@ -12,13 +12,13 @@ public class ParseResult {
 
 
 
-    ParseResult(String original, int notYetParsed, AST tree) {
+    public ParseResult(String original, int notYetParsed, AST tree) {
         this.original = original;
         this.notYetParsed = notYetParsed;
         this.tree = tree;
     }
 
-    ParseResult(String original, int notYetParsed, AST tree, ParseRule ruleApplied) {
+    public ParseResult(String original, int notYetParsed, AST tree, ParseRule ruleApplied) {
         this.original = original;
         this.notYetParsed = notYetParsed;
         this.tree = tree;
@@ -33,7 +33,7 @@ public class ParseResult {
         }
     }
 
-    AST getTree() {
+    public AST getTree() {
         return tree;
     }
 
