@@ -14,7 +14,7 @@ public class ParseRuleStorage {
     private Map<NonTerminal, Map<Character, LinkedHashSet<ParseRule>>> rulesPlus = new HashMap<>();
 
 
-    public void prepare(Language lang) {
+    public void prepare(Language lang) throws UndefinedNontermException {
         setDefaults(lang);
         calculateFirst();
         calculateFollow(new NonTerminal("HighLevel"));
@@ -131,7 +131,7 @@ public class ParseRuleStorage {
         return rules.keySet();
     }
 
-    void calculateFirst() {
+    void calculateFirst() throws UndefinedNontermException {
         for (Terminal term : getAllTerminals()) {
             first.put(term, Collections.singleton(term.getValue().charAt(0)));
         }
@@ -155,11 +155,12 @@ public class ParseRuleStorage {
                         continue;
                     }
                     for (Node rhsElem : rule.getRHS()) {
-                        try {
-                            first.get(nt).addAll(first.get(rhsElem));
-                        } catch (Exception e) {
-                            System.out.println(":(");
+
+                        if (!first.containsKey(rhsElem)) {
+                            throw new UndefinedNontermException(rhsElem);
                         }
+
+                        first.get(nt).addAll(first.get(rhsElem));
                         if (!first.get(rhsElem).contains(null)) {
                             break;
                         }

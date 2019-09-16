@@ -19,26 +19,17 @@ public class TestGeneral extends ParseLangV1TestCase {
 
     @Test
     public void testEmpty() throws IOException, ParseErrorException {
-        String contentsToExecute = readString("general/emptyfile.plang");
-        ParseResult result = parser.readFile(storage, contentsToExecute);
-        assertEquals("", result.getRemaining());
-        assertEquals("", result.getParsed());
+        test("general/emptyfile.plang");
     }
 
     @Test
     public void testEmpty100Times() throws IOException, ParseErrorException {
-        String contentsToExecute = readString("general/test100empty.plang");
-        ParseResult result = parser.readFile(storage, contentsToExecute);
-        assertEquals("", result.getRemaining());
-        assertEquals(contentsToExecute, result.getParsed());
+        test("general/test100empty.plang");
     }
 
     @Test
     public void testEmptyDecl() throws IOException, ParseErrorException {
-        String contentsToExecute = readString("general/emptydecl.plang");
-        ParseResult result = parser.readFile(storage, contentsToExecute);
-        assertEquals("", result.getRemaining());
-        assertEquals(contentsToExecute, result.getParsed());
+        test("general/emptydecl.plang");
     }
 
 
