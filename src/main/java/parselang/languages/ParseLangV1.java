@@ -126,11 +126,10 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("NumberLiteral").addRhs(term("0")));
         rules.add(new ParseRule("NumberLiteral").addRhs(nonTerm("NonZeroNumber"), star(nonTerm("Number"))));
         rules.add(new ParseRule("Expression").addRhs(nonTerm("ComparitiveExpression")));
-
-        rules.add(new ParseRule("ComparitiveExpression").addRhs(nonTerm("AdditiveExpression")));
-        rules.add(new ParseRule("AdditiveExpression").addRhs(nonTerm("MultiplicativeExpression"), star(term("+"), nonTerm("MultiplicativeExpression"))));
-        rules.add(new ParseRule("MultiplicativeExpression").addRhs(nonTerm("SimpleExpression"), star(term("*"), nonTerm("SimpleExpression"))));
-        rules.add(new ParseRule("SimpleExpression").addRhs(nonTerm("NumberLiteral")));
+        rules.add(new ParseRule("ComparitiveExpression").addRhs(nonTerm("AdditiveExpression"), star(nonTerm("Comparator"), ws(), nonTerm("AdditiveExpression")), ws()));
+        rules.add(new ParseRule("AdditiveExpression").addRhs(nonTerm("MultiplicativeExpression"), star(term("+"), ws(), nonTerm("MultiplicativeExpression")), ws()));
+        rules.add(new ParseRule("MultiplicativeExpression").addRhs(nonTerm("SimpleExpression"), star(term("*"), ws(), nonTerm("SimpleExpression")), ws()));
+        rules.add(new ParseRule("SimpleExpression").addRhs(nonTerm("NumberLiteral"), ws()));
 
 
 
