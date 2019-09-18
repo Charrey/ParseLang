@@ -22,11 +22,6 @@ public abstract class Parser {
         return parsed;
     }
 
-    public AST readCommand(ParseRuleStorage storage, String command) throws ParseErrorException {
-        ParseResult parsed = parse(command, new NonTerminal("Expression"), storage);
-        return parsed.getTree();
-    }
-
     Logger log = Logger.getLogger(RecursiveParser.class.getName());
 
 }

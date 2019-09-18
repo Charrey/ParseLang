@@ -20,8 +20,7 @@ public class RecursiveParser extends Parser{
             for (ParseRule ruleToTry : storage.getByNonTerminal(toParseToNT, notYetParsed == originalString.length() ? null : originalString.charAt(notYetParsed))) {
                 try {
                     return parseWithRule(originalString, notYetParsed, ruleToTry, storage);
-                } catch (ParseErrorException bla) {
-                    System.out.println("foo");
+                } catch (ParseErrorException ignored) {
                 }
             }
             throw new ParseErrorException(originalString, notYetParsed);

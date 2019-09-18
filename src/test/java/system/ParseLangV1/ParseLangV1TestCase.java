@@ -31,6 +31,7 @@ public abstract class ParseLangV1TestCase {
         ParseResult result = parser.readFile(storage, contentsToExecute);
         assertEquals("", result.getRemaining());
         assertEquals(contentsToExecute, result.getParsed());
+        System.out.println(result.getTree());
     }
 
     @Before

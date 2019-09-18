@@ -45,9 +45,6 @@ public class ParseRuleStorage {
         if (!(nonTerminal instanceof NonTerminal)) {
             return new LinkedHashSet<>();
         }
-        if (((NonTerminal) nonTerminal).getName().contains("(Number*)")) {
-            System.out.println("foo");
-        }
         if (((NonTerminal) nonTerminal).getName().contains("Number*")) {
             System.out.println();
         }
