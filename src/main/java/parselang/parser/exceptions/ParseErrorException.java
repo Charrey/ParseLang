@@ -5,8 +5,22 @@ public class ParseErrorException extends Exception {
     private final int index;
 
     public ParseErrorException(String originalString, int index) {
-        super("No alternative at index " + index + " at " + whichCharacter(originalString, index));
+        super("No alternative at index " + findRowColumn(originalString, index) + " at " + whichCharacter(originalString, index));
         this.index = index;
+    }
+
+    private static String findRowColumn(String originalString, int index) {
+        int row = 1;
+        int otherchars = 1;
+        for(int i = 0; i < index-1; i++) {
+            if (originalString.charAt(i) == '\n') {
+                row++;
+                otherchars = 1;
+            } else {
+                otherchars++;
+            }
+        }
+        return "(" + row + ":" + otherchars + ")";
     }
 
     private static String whichCharacter(String originalString, int index) {
