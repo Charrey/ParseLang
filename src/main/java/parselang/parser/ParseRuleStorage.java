@@ -20,6 +20,7 @@ public class ParseRuleStorage {
         calculateFollow(new NonTerminal("HighLevel"));
         calculateFirstPlus();
         removeLeftRecursion();
+
     }
 
     private void addRule(ParseRule rule) {

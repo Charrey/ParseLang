@@ -7,17 +7,27 @@ import parselang.parser.exceptions.ParseErrorException;
 
 public class RecursiveParser extends Parser{
 
+    private int farthestParse;
 
     @Override
-    public ParseResult parse(String originalString, Node toParseTo, ParseRuleStorage storage) throws ParseErrorException {
-        return parse(originalString, 0, toParseTo, storage);
+    public synchronized ParseResult parse(String originalString, Node toParseTo, ParseRuleStorage storage) throws ParseErrorException {
+        farthestParse = 0;
+        ParseResult res =  parse(originalString, 0, toParseTo, storage);
+        if (res.getRemainingIndex() < originalString.length()) {
+            throw new ParseErrorException(originalString, farthestParse);
+        }
+        return res;
     }
 
     private ParseResult parse(String originalString, int notYetParsed, Node toParseTo, ParseRuleStorage storage) throws ParseErrorException  {
+        if (originalString.length() < notYetParsed) {
+            throw new ParseErrorException(originalString, notYetParsed);
+        }
         System.out.println(originalString.substring(notYetParsed).replace("\n", "").replace("\r", "") + "                                      " + toParseTo);
-         if (toParseTo instanceof NonTerminal) {
+
+        if (toParseTo instanceof NonTerminal) {
             NonTerminal toParseToNT = (NonTerminal) toParseTo;
-            for (ParseRule ruleToTry : storage.getByNonTerminal(toParseToNT, notYetParsed == originalString.length() ? null : originalString.charAt(notYetParsed))) {
+             for (ParseRule ruleToTry : storage.getByNonTerminal(toParseToNT, notYetParsed == originalString.length() ? null : originalString.charAt(notYetParsed))) {
                 try {
                     return parseWithRule(originalString, notYetParsed, ruleToTry, storage);
                 } catch (ParseErrorException ignored) {
@@ -34,9 +44,10 @@ public class RecursiveParser extends Parser{
 
     private ParseResult parseTerminal(String originalString, int notYetParsed, Terminal toParseTo) throws ParseErrorException {
         int size = toParseTo.getValue().length();
-        if (originalString.charAt(notYetParsed) == toParseTo.getValue().charAt(0)) {
+        if (originalString.length() <= notYetParsed || originalString.charAt(notYetParsed) == toParseTo.getValue().charAt(0)) {
             AST tree = new AST(toParseTo);
             tree.setParsed(originalString, notYetParsed, notYetParsed + size);
+            farthestParse = notYetParsed + size;
             return new ParseResult(originalString, notYetParsed + size, tree);
         } else {
             throw new ParseErrorException(originalString, notYetParsed);

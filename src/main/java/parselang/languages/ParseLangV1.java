@@ -123,6 +123,8 @@ public class ParseLangV1 implements Language {
 
         rules.add(new ParseRule("Sentence").addRhs(nonTerm("Expression")));
 
+        rules.add(new ParseRule("Sentence").addRhs(term("return"), ws(), nonTerm("Expression")));
+
         rules.add(new ParseRule("NumberLiteral").addRhs(term("0")));
         rules.add(new ParseRule("NumberLiteral").addRhs(nonTerm("NonZeroNumber"), star(nonTerm("Number"))));
 
