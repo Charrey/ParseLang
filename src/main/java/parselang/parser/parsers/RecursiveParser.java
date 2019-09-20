@@ -47,7 +47,7 @@ public class RecursiveParser extends Parser{
         if (originalString.length() <= notYetParsed || originalString.charAt(notYetParsed) == toParseTo.getValue().charAt(0)) {
             AST tree = new AST(toParseTo);
             tree.setParsed(originalString, notYetParsed, notYetParsed + size);
-            farthestParse = notYetParsed + size;
+            farthestParse = Math.max(farthestParse, notYetParsed + size);
             return new ParseResult(originalString, notYetParsed + size, tree);
         } else {
             throw new ParseErrorException(originalString, notYetParsed);
