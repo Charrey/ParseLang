@@ -29,5 +29,3 @@ ParseLang is a compiler for the ParseLang language: a GPL with infinitely extens
 #### Developer/Company
 * e-mail: pvanleeuwen [at] redskies.nl
 * linkedin: https://www.linkedin.com/in/pim-van-leeuwen-8939ba129/
-
-[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)]flattr.com/@Charrey) 
