@@ -3,6 +3,7 @@ package parselang.interpreter;
 import parselang.filereader.FileReader;
 import parselang.languages.ParseLangV1;
 import parselang.parser.UndefinedNontermException;
+import parselang.parser.data.NonTerminal;
 import parselang.parser.exceptions.ParseErrorException;
 import parselang.parser.ParseRuleStorage;
 import parselang.parser.parsers.Parser;
@@ -25,8 +26,8 @@ public class Interpreter {
         //String highLevelContents = fileReader.readRootFile(rootPath);
 
         //parser.readHighLevel(storage, highLevelContents);
-        storage.prepare(new ParseLangV1());
-        parser.readFile(storage, contentsToExecute);
+        storage.prepare(new ParseLangV1(), new NonTerminal("HighLevel"));
+        parser.readFile(storage, contentsToExecute, new NonTerminal("HighLevel"));
 
         //AST parsedCommand = parser.readCommand(storage, command);
         //System.out.println(parsedCommand.evaluate());

@@ -9,6 +9,6 @@ public class TestBooleans extends ParseLangV1TestCase {
 
     @Test
     public void testBooleanLiterals() throws IOException, ParseErrorException {
-        test("expressions/boolean1.plang");
+        testFile("expressions/boolean1.plang");
     }
 }

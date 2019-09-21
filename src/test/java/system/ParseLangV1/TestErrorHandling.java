@@ -13,7 +13,7 @@ public class TestErrorHandling extends ParseLangV1TestCase {
     @Test
     public void testUnfishedProgram() throws IOException {
         try {
-            test("faulty/forgotclosebracket.plang");
+            testFile("faulty/forgotclosebracket.plang");
             fail();
         } catch (ParseErrorException e) {
             assertEquals("No alternative at index (2:16) at EOF", e.getMessage());
@@ -23,7 +23,7 @@ public class TestErrorHandling extends ParseLangV1TestCase {
     @Test
     public void testTypo() throws IOException {
         try {
-            test("faulty/typo.plang");
+            testFile("faulty/typo.plang");
             fail();
         } catch (ParseErrorException e) {
             assertEquals("No alternative at index (4:14) at +", e.getMessage());

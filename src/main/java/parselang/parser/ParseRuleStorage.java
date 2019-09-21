@@ -14,10 +14,10 @@ public class ParseRuleStorage {
     private Map<NonTerminal, Map<Character, LinkedHashSet<ParseRule>>> rulesPlus = new HashMap<>();
 
 
-    public void prepare(Language lang) throws UndefinedNontermException {
+    public void prepare(Language lang, NonTerminal toplevel) throws UndefinedNontermException {
         setDefaults(lang);
         calculateFirst();
-        calculateFollow(new NonTerminal("HighLevel"));
+        calculateFollow(toplevel);
         calculateFirstPlus();
         removeLeftRecursion();
 
