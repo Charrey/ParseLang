@@ -3,6 +3,7 @@ package parselang.parser.data;
 import parselang.parser.ParseRuleStorage;
 import parselang.types.Value;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -99,5 +100,25 @@ public class AST extends ASTElem implements Evaluator {
             }
             return sb.toString();
         }
+    }
+
+    public Node getRoot() {
+        return root;
+    }
+
+    public List<ASTElem> getChildren() {
+        return children;
+    }
+
+    public ASTElem getChild(int i) {
+        return children.get(i);
+    }
+
+    public void setChild(int i, ASTElem newChild) {
+        children.set(i, newChild);
+    }
+
+    public ASTElem getLastChild() {
+        return children.get(children.size()-1);
     }
 }

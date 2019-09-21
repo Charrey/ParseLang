@@ -2,17 +2,20 @@ package parselang.parser.parsers;
 
 import parselang.parser.ParseResult;
 import parselang.parser.ParseRuleStorage;
+import parselang.parser.TreeFixer;
 import parselang.parser.data.*;
 import parselang.parser.exceptions.ParseErrorException;
 
 public class RecursiveParser extends Parser{
 
     private int farthestParse;
+    private TreeFixer treeFixer = new TreeFixer();
 
     @Override
     public synchronized ParseResult parse(String originalString, Node toParseTo, ParseRuleStorage storage) throws ParseErrorException {
         farthestParse = 0;
         ParseResult res =  parse(originalString, 0, toParseTo, storage);
+        res.setTree((AST) treeFixer.fix(res.getTree()));
         if (res.getRemainingIndex() < originalString.length()) {
             throw new ParseErrorException(originalString, farthestParse);
         }

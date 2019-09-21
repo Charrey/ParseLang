@@ -48,4 +48,8 @@ public class ParseResult {
     public int getRemainingIndex() {
         return notYetParsed;
     }
+
+    public void setTree(AST tree) {
+        this.tree = tree;
+    }
 }
