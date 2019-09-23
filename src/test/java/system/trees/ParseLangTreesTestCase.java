@@ -1,4 +1,4 @@
-package system.languageIndependent.parser;
+package system.trees;
 
 import org.junit.Before;
 import parselang.filereader.FileReader;
@@ -13,7 +13,7 @@ import system.ParseLangTestCase;
 
 import java.io.IOException;
 
-public abstract class ParseLangTestTestCase extends ParseLangTestCase {
+public abstract class ParseLangTreesTestCase extends ParseLangTestCase {
 
     @Before
     public void setup() throws UndefinedNontermException {

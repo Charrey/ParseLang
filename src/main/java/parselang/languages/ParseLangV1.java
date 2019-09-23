@@ -104,19 +104,13 @@ public class ParseLangV1 implements Language {
 
         rules.add(new ParseRule("StringLiteral").addRhs(term("'"))
                 .addRhs(star(nonTerm("SafeChar"))).addRhs(term("'")));
-
-
-        rules.add(new ParseRule("StarToken").addRhs(nonTerm("StringLiteral")).addRhs(term("*")));
-        rules.add(new ParseRule("StarToken").addRhs(nonTerm("NonTerminal")).addRhs(term("*")));
-
-
-        rules.add(new ParseRule("Token").addRhs(nonTerm("StringLiteral")));
+        rules.add(new ParseRule("Token").addRhs(nonTerm("StringLiteral"), nonTerm("PotentialStar")));
         rules.add(new ParseRule("BracketToken").addRhs(term("(")).addRhs(star(ws(), nonTerm("Token"))).addRhs(term(")")));
-        rules.add(new ParseRule("StarToken").addRhs(nonTerm("BracketToken")).addRhs(term("*")));
 
-        rules.add(new ParseRule("Token").addRhs(nonTerm("StarToken")));
-        rules.add(new ParseRule("Token").addRhs(nonTerm("BracketToken")));
-        rules.add(new ParseRule("Token").addRhs(nonTerm("NonTerminal")));
+        rules.add(new ParseRule("Token").addRhs(nonTerm("BracketToken"), nonTerm("PotentialStar")));
+        rules.add(new ParseRule("Token").addRhs(nonTerm("NonTerminal"), nonTerm("PotentialStar")));
+        rules.add(new ParseRule("PotentialStar").addRhs(term("*")));
+        rules.add(new ParseRule("PotentialStar").addRhs());
 
         rules.add(new ParseRule("Comparator").addRhs(term("<")));
         rules.add(new ParseRule("Comparator").addRhs(term(">")));

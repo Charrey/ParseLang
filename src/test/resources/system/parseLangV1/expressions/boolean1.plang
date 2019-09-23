@@ -1,0 +1,7 @@
+FooExpression < SimpleExpression = 'foo' {
+    true;
+}
+
+BarExpression < SimpleExpression = 'foo' {
+    false;
+}

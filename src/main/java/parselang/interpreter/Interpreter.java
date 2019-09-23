@@ -18,16 +18,17 @@ public class Interpreter {
     private static ParseRuleStorage storage = new ParseRuleStorage();
 
     public static void main(String[] args) throws IOException, ParseErrorException, UndefinedNontermException {
-        String fileName = args[0];
-        String command = args[1];
-        String contentsToExecute = fileReader.readStringFromFile(fileName);
-        //Path rootPath = fileReader.seekRoot(fileName);
-
-        //String highLevelContents = fileReader.readRootFile(rootPath);
-
-        //parser.readHighLevel(storage, highLevelContents);
-        storage.prepare(new ParseLangV1(), new NonTerminal("HighLevel"));
-        parser.readFile(storage, contentsToExecute, new NonTerminal("HighLevel"));
+        System.out.println("Working on it! Run tests instead :)");
+//        String fileName = args[0];
+//        String command = args[1];
+//        String contentsToExecute = fileReader.readStringFromFile(fileName);
+//        //Path rootPath = fileReader.seekRoot(fileName);
+//
+//        //String highLevelContents = fileReader.readRootFile(rootPath);
+//
+//        //parser.readHighLevel(storage, highLevelContents);
+//        storage.prepare(new ParseLangV1(), new NonTerminal("HighLevel"));
+//        parser.readFile(storage, contentsToExecute, new NonTerminal("HighLevel"));
 
         //AST parsedCommand = parser.readCommand(storage, command);
         //System.out.println(parsedCommand.evaluate());

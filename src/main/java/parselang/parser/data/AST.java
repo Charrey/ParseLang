@@ -18,6 +18,7 @@ public class AST extends ASTElem implements Evaluator {
     private int parsedFrom;
     private int parsedTo;
 
+
     private List<ASTElem> children = new LinkedList<>();
 
     public AST(Node root) {
@@ -120,5 +121,9 @@ public class AST extends ASTElem implements Evaluator {
 
     public ASTElem getLastChild() {
         return children.get(children.size()-1);
+    }
+
+    public String subString(String originalString) {
+        return originalString.substring(parsedFrom, parsedTo);
     }
 }

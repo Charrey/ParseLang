@@ -1,5 +1,6 @@
 package parselang.parser.data;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,5 +33,9 @@ public class StarNode extends Node {
             }
             return sb.toString();
         }
+    }
+
+    public List<Node> children() {
+        return new ArrayList<>(Arrays.asList(inner));
     }
 }

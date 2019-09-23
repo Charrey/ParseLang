@@ -1,0 +1,8 @@
+AnimalExpression < SimpleExpression = 'cow' {
+    return 5;
+}
+
+
+FooExpression < SimpleExpression = 'hey' {
+    return cow;
+}

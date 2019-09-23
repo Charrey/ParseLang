@@ -1,4 +1,4 @@
-package system.ParseLangV1;
+package system.parseLangV1;
 
 import org.junit.Test;
 import parselang.parser.ParseResult;

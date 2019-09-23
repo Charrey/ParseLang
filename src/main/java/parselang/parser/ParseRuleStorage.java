@@ -1,12 +1,17 @@
 package parselang.parser;
 
+import javafx.util.Pair;
 import parselang.languages.Language;
 import parselang.parser.data.*;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ParseRuleStorage {
+
+    private List<ParseRule> originalRules;
+    private Set<Pair<ParseRule, Direction>> addedRules;
 
     private Map<NonTerminal, List<ParseRule>> rules = new HashMap<>();
     private Map<Node, Set<Character>> first = new HashMap<>();
@@ -15,22 +20,41 @@ public class ParseRuleStorage {
 
 
     public void prepare(Language lang, NonTerminal toplevel) throws UndefinedNontermException {
+        addedRules = new HashSet<>();
         setDefaults(lang);
         calculateFirst();
         calculateFollow(toplevel);
         calculateFirstPlus();
-        removeLeftRecursion();
-
     }
 
-    private void addRule(ParseRule rule) {
-        addRules(rule.convertStarNodes(), Direction.RIGHT);
+    public void addCustomRules(Collection<Pair<ParseRule, Direction>> customRules, NonTerminal toplevel) {
+        addedRules.addAll(customRules);
+        for (Pair<ParseRule, Direction> rule : customRules) {
+            addRule(rule.getKey(), rule.getValue());
+        }
+        try {
+            calculateFirst();
+        } catch (UndefinedNontermException e) {
+            //This should not happen??
+            e.printStackTrace();
+        }
+        calculateFollow(toplevel);
+        calculateFirstPlus();
+    }
+
+    private void addRule(ParseRule rule, Direction dir) {
+        addRules(rule.convertStarNodes(), dir);
     }
 
     private void addRules(Collection<ParseRule> rules, Direction dir) {
         for (ParseRule rule : rules) {
             NonTerminal nonTerminal = rule.getLHS();
             this.rules.computeIfAbsent(nonTerminal, nonTerminal1 -> new LinkedList<>());
+            for (Node rhsElem : rule.getRHS()) {
+                if (rhsElem instanceof NonTerminal) {
+                    this.rules.putIfAbsent((NonTerminal) rhsElem, new LinkedList<>());
+                }
+            }
             switch (dir) {
                 case LEFT:
                     this.rules.get(nonTerminal).add(0, rule);
@@ -76,11 +100,17 @@ public class ParseRuleStorage {
         return new StarNode(content);
     }
 
-    void setDefaults(Language language) {
-        for (ParseRule rule : language.getRules()) {
-            addRule(rule);
+    public static Node star(List<Node> content) {
+        return new StarNode(content.toArray(new Node[0]));
+    }
+
+    private void setDefaults(Language language) {
+        originalRules = language.getRules();
+        for (ParseRule rule : originalRules) {
+            addRule(rule, Direction.RIGHT);
         }
     }
+
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -105,12 +135,6 @@ public class ParseRuleStorage {
         return sb.toString();
     }
 
-
-    void removeLeftRecursion() {
-        //TODO
-        System.err.println("To do: remove left recursion here");
-    }
-
     private Set<Terminal> getAllTerminals() {
         Set<Terminal> res = new HashSet<>();
         for (List<ParseRule> rulesForNonTerminal : rules.values()) {
@@ -126,7 +150,17 @@ public class ParseRuleStorage {
     }
 
     private Set<NonTerminal> getAllNonTerminals() {
-        return rules.keySet();
+        Set<NonTerminal> res = new HashSet<>(rules.keySet());
+        for (Map.Entry<NonTerminal, List<ParseRule>> entry : rules.entrySet()) {
+            for (ParseRule rule : entry.getValue()) {
+                for (Node rhsElem : rule.getRHS()) {
+                    if (rhsElem instanceof NonTerminal) {
+                        res.add((NonTerminal) rhsElem);
+                    }
+                }
+            }
+        }
+        return res;
     }
 
     void calculateFirst() throws UndefinedNontermException {
@@ -240,6 +274,9 @@ public class ParseRuleStorage {
                     }
                     Node lastRhs = rule.getRHS().get(rule.getRHS().size()-1);
                     if (lastRhs instanceof NonTerminal) {
+                        if (!follow.containsKey(lastRhs)) {
+                            System.out.println();
+                        }
                         follow.get(lastRhs).addAll(follow.get(nt));
                     }
                     Set<Character> toAdd = new HashSet<>();

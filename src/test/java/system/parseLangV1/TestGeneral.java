@@ -1,4 +1,4 @@
-package system.ParseLangV1;
+package system.parseLangV1;
 
 import org.junit.Test;
 import parselang.parser.exceptions.ParseErrorException;
@@ -6,7 +6,6 @@ import parselang.parser.exceptions.ParseErrorException;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
-import static parselang.parser.ParseRuleStorage.nonTerm;
 
 public class TestGeneral extends ParseLangV1TestCase {
 

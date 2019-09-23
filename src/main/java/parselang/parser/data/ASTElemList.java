@@ -1,7 +1,6 @@
 package parselang.parser.data;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,5 +62,13 @@ public class ASTElemList extends ASTElem implements Iterable<ASTElem> {
 
     public void prepend(ASTElem listToAdd) {
         nodeList.add(0, listToAdd);
+    }
+
+    public ASTElem get(int i) {
+        return nodeList.get(i);
+    }
+
+    public Stream<ASTElem> stream() {
+        return nodeList.stream();
     }
 }

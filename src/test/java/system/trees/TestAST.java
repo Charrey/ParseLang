@@ -1,4 +1,4 @@
-package system.languageIndependent.parser;
+package system.trees;
 
 import org.junit.Test;
 import parselang.parser.ParseResult;
@@ -15,7 +15,7 @@ import static parselang.parser.ParseRuleStorage.nonTerm;
 import static parselang.parser.ParseRuleStorage.term;
 
 
-public class TestAST extends ParseLangTestTestCase {
+public class TestAST extends ParseLangTreesTestCase {
 
     @Test
     public void testASTStructure() throws IOException, ParseErrorException {
