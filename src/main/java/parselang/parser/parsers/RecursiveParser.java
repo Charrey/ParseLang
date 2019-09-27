@@ -89,26 +89,34 @@ public class RecursiveParser extends Parser{
         return stream.collect(Collectors.toList());
     }
     private List<Node> extractNodesFromAST(String originalString, AST nodeContainer) {
-        if (nodeContainer.getRoot() instanceof Terminal) {
+        if (!(nodeContainer.getRoot() instanceof NonTerminal)) {
             return Collections.emptyList();
         }
         String rootName = ((NonTerminal) nodeContainer.getRoot()).getName();
         if (rootName.equals("Token")) {
-            List<Node> token = extractNodesFromTokenChild(originalString, (AST) nodeContainer.getChild(0));
+            AST firstChild = (AST) nodeContainer.getChild(0);
+            NonTerminal firstChildRoot = (NonTerminal) firstChild.getRoot();
+            List<Node> token = extractNodesFromTokenChild(originalString, firstChild);
             List<Node> res;
-            if (((AST)nodeContainer.getChild(1)).getChildren().size() == 1) {
-                res = Collections.singletonList(star(token));
+            AST potentialStarNode = (AST) nodeContainer.getChild(1);
+            boolean hasStar = potentialStarNode.getChildren().size() == 1;
+            res = hasStar ? Collections.singletonList(star(token)) : token;
+            if (firstChildRoot.getName().equals("Terminal")) {
+                return res;
+            } else if (firstChildRoot.getName().equals("NonTerminal")) {
+                AST potentialVariable = ((AST)nodeContainer.getChild(3));
+                if (potentialVariable.getChildren().size() > 0) {
+                    AST variable = (AST) potentialVariable.getChild(0);
+                    boolean lazy = isLazy(variable);
+                    String name = variable.subString(originalString);
+                    String trimmedname = lazy ? name.substring(0, name.length()-1) : name;
+                    return res.stream().map((Function<Node, Node>) node -> bound((NonTerminal) node, trimmedname, lazy)).collect(Collectors.toList());
+                } else {
+                    return res;
+                }
             } else {
-                assert ((AST)nodeContainer.getChild(1)).getChildren().size() == 0;
-                res = token;
+                return res;
             }
-            if (((NonTerminal)((AST)nodeContainer.getChild(0)).getRoot()).getName().equals("NonTerminal") &&  ((AST)(nodeContainer.getChild(3))).getChildren().size() == 1) {
-                String name = ((AST)nodeContainer.getChild(3)).subString(originalString);
-                res = res.stream().map((Function<Node, Node>) node -> bound((NonTerminal)node, name)).collect(Collectors.toList());
-            } else {
-                System.out.println();
-            }
-            return res;
         } else if (rootName.contains("Token")) {
             List<List<Node>> nodesOfChildren = nodeContainer.getChildren().stream().map(ast -> extractNodes(originalString, ast)).collect(Collectors.toList());
             Stream<Node> stream = Stream.of();
@@ -118,6 +126,12 @@ public class RecursiveParser extends Parser{
         } else {
             return new LinkedList<>();
         }
+    }
+
+    private boolean isLazy(AST variable) {
+        assert variable.getRoot().equals(nonTerm("Variable"));
+        AST potentialLazy = (AST) variable.getChild(2);
+        return potentialLazy.getChildren().size() > 0;
     }
 
     private List<Node> extractNodesFromTokenChild(String originalString, AST tokenChild) {

@@ -12,8 +12,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static parselang.parser.ParseRuleStorage.nonTerm;
-import static parselang.parser.ParseRuleStorage.term;
+import static parselang.parser.ParseRuleStorage.*;
 
 public class TestUpdateGrammar extends ParseLangV1TestCase {
 
@@ -23,12 +22,9 @@ public class TestUpdateGrammar extends ParseLangV1TestCase {
         ParseResult result = parser.readFile(storage, program, new NonTerminal("HighLevel"));
         assertEquals("", result.getRemaining());
         assertEquals(program, result.getParsed());
-        AST declaration = (AST) ((ASTElemList)((ASTElemList)result.getTree().getChild(0)).get(0)).get(1);
-        List<Node> nodesExtracted = parser.extractNodes(program, declaration.getChild(7));
-        assertEquals(new Terminal("foo"), nodesExtracted.get(0));
-        assertEquals(new Terminal("bar"), nodesExtracted.get(1));
-        assertEquals(new NonTerminal("Flop"), nodesExtracted.get(2));
-        assertEquals(3, nodesExtracted.size());
+        Set<Pair<ParseRule, Direction>> addedRules = storage.getAddedRules();
+        assertTrue(addedRules.contains(new Pair<>(new ParseRule("Expression").addRhs(nonTerm("FooExpression")), Direction.LEFT)));
+        assertTrue(addedRules.contains(new Pair<>(new ParseRule("FooExpression").addRhs(term("foo"), term("bar"), nonTerm("Flop")), Direction.RIGHT)));
     }
 
     @Test
@@ -37,19 +33,9 @@ public class TestUpdateGrammar extends ParseLangV1TestCase {
         ParseResult result = parser.readFile(storage, program, new NonTerminal("HighLevel"));
         assertEquals("", result.getRemaining());
         assertEquals(program, result.getParsed());
-        AST declaration = (AST) ((ASTElemList)((ASTElemList)result.getTree().getChild(0)).get(0)).get(1);
-        List<Node> nodesExtracted = parser.extractNodes(program, declaration.getChild(7));
-        System.out.println(nodesExtracted);
-        assertEquals(1, nodesExtracted.size());
-        Node node = nodesExtracted.get(0);
-        assertTrue(node instanceof StarNode);
-        StarNode starNode = (StarNode) node;
-        assertEquals(1, starNode.contents().size());
-
-        Node contentOfStar = starNode.contents().get(0);
-        assertTrue(contentOfStar instanceof Terminal);
-        Terminal terminal = (Terminal) contentOfStar;
-        assertEquals("foo", terminal.getValue());
+        Set<Pair<ParseRule, Direction>> addedRules = storage.getAddedRules();
+        assertTrue(addedRules.contains(new Pair<>(new ParseRule("Expression").addRhs(nonTerm("FooExpression")), Direction.LEFT)));
+        assertTrue(addedRules.contains(new Pair<>(new ParseRule("FooExpression").addRhs(star(term("foo"))), Direction.RIGHT)));
     }
 
     @Test
@@ -58,17 +44,9 @@ public class TestUpdateGrammar extends ParseLangV1TestCase {
         ParseResult result = parser.readFile(storage, program, new NonTerminal("HighLevel"));
         assertEquals("", result.getRemaining());
         assertEquals(program, result.getParsed());
-        AST declaration = (AST) ((ASTElemList)((ASTElemList)result.getTree().getChild(0)).get(0)).get(1);
-        List<Node> nodesExtracted = parser.extractNodes(program, declaration.getChild(7));
-        System.out.println(nodesExtracted);
-        assertEquals(1, nodesExtracted.size());
-        Node node = nodesExtracted.get(0);
-        assertTrue(node instanceof StarNode);
-        StarNode starNode = (StarNode) node;
-        assertEquals(2, starNode.children().size());
-
-        assertEquals(term("foo"), starNode.children().get(0));
-        assertEquals(term("bar"), starNode.children().get(1));
+        Set<Pair<ParseRule, Direction>> addedRules = storage.getAddedRules();
+        assertTrue(addedRules.contains(new Pair<>(new ParseRule("Expression").addRhs(nonTerm("FooExpression")), Direction.LEFT)));
+        assertTrue(addedRules.contains(new Pair<>(new ParseRule("FooExpression").addRhs(star(term("foo"), term("bar"))), Direction.RIGHT)));
     }
 
     @Test
@@ -77,19 +55,9 @@ public class TestUpdateGrammar extends ParseLangV1TestCase {
         ParseResult result = parser.readFile(storage, program, new NonTerminal("HighLevel"));
         assertEquals("", result.getRemaining());
         assertEquals(program, result.getParsed());
-        AST declaration = (AST) ((ASTElemList)((ASTElemList)result.getTree().getChild(0)).get(0)).get(1);
-        List<Node> nodesExtracted = parser.extractNodes(program, declaration.getChild(7));
-        System.out.println(nodesExtracted);
-        assertEquals(1, nodesExtracted.size());
-        Node node = nodesExtracted.get(0);
-        assertTrue(node instanceof StarNode);
-        StarNode starNode = (StarNode) node;
-        assertEquals(2, starNode.children().size());
-        assertEquals(term("bar"), starNode.children().get(1));
-        assertTrue(starNode.children().get(0) instanceof StarNode);
-        StarNode firstChild = (StarNode) starNode.children().get(0);
-        assertEquals(1, firstChild.children().size());
-        assertEquals(term("foo"), firstChild.children().get(0));
+        Set<Pair<ParseRule, Direction>> addedRules = storage.getAddedRules();
+        assertTrue(addedRules.contains(new Pair<>(new ParseRule("Expression").addRhs(nonTerm("FooExpression")), Direction.LEFT)));
+        assertTrue(addedRules.contains(new Pair<>(new ParseRule("FooExpression").addRhs(star(star(term("foo")), term("bar"))), Direction.RIGHT)));
     }
 
     @Test
@@ -98,9 +66,9 @@ public class TestUpdateGrammar extends ParseLangV1TestCase {
         ParseResult result = parser.readFile(storage, program, new NonTerminal("HighLevel"));
         assertEquals("", result.getRemaining());
         assertEquals(program, result.getParsed());
-
         Set<Pair<ParseRule, Direction>> addedRules = storage.getAddedRules();
         assertTrue(addedRules.contains(new Pair<>(new ParseRule("Expression").addRhs(nonTerm("FooExpression")), Direction.LEFT)));
+        assertTrue(addedRules.contains(new Pair<>(new ParseRule("FooExpression").addRhs(bound(nonTerm("SimpleExpression"), "exp", false)), Direction.RIGHT)));
     }
 
     @Test
@@ -109,5 +77,8 @@ public class TestUpdateGrammar extends ParseLangV1TestCase {
         ParseResult result = parser.readFile(storage, program, new NonTerminal("HighLevel"));
         assertEquals("", result.getRemaining());
         assertEquals(program, result.getParsed());
+        Set<Pair<ParseRule, Direction>> addedRules = storage.getAddedRules();
+        assertTrue(addedRules.contains(new Pair<>(new ParseRule("Expression").addRhs(nonTerm("FooExpression")), Direction.LEFT)));
+        assertTrue(addedRules.contains(new Pair<>(new ParseRule("FooExpression").addRhs(bound(nonTerm("SimpleExpression"), "exp", true)), Direction.RIGHT)));
     }
 }

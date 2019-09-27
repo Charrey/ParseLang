@@ -96,8 +96,8 @@ public class ParseRuleStorage {
         return new Terminal(name);
     }
 
-    public static BoundNonTerminal bound(NonTerminal nonTerm, String name) {
-        return new BoundNonTerminal(nonTerm, name);
+    public static BoundNonTerminal bound(NonTerminal nonTerm, String name, boolean lazy) {
+        return new BoundNonTerminal(nonTerm, name, lazy);
     }
 
     public static Node star(Node... content) {
