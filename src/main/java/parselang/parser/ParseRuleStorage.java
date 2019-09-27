@@ -15,6 +15,7 @@ public class ParseRuleStorage {
     private final Map<Node, Set<Character>> first = new HashMap<>();
     private final Map<Node, Set<Character>> follow = new HashMap<>();
     private final Map<NonTerminal, Map<Character, LinkedHashSet<ParseRule>>> rulesPlus = new HashMap<>();
+    private final Set<NonTerminal> allNonterminals = new HashSet<>();
 
 
     public void prepare(Language lang, NonTerminal toplevel) throws UndefinedNontermException {
@@ -44,15 +45,25 @@ public class ParseRuleStorage {
         addRules(rule.convertStarNodes(), dir);
     }
 
+    private void addMissingNonterminals(Collection<Node> nodes) {
+        for (Node node : nodes) {
+            if (node instanceof NonTerminal) {
+                allNonterminals.add((NonTerminal) node);
+                this.rules.putIfAbsent((NonTerminal) node, new LinkedList<>());
+            } else if (node instanceof StarNode) {
+                addMissingNonterminals(((StarNode) node).contents());
+            } else if (node instanceof BoundNonTerminal) {
+                addMissingNonterminals(Collections.singleton(((BoundNonTerminal) node).getContent()));
+            }
+        }
+    }
+
     private void addRules(Collection<ParseRule> rules, Direction dir) {
         for (ParseRule rule : rules) {
             NonTerminal nonTerminal = rule.getLHS();
+            allNonterminals.add(nonTerminal);
             this.rules.computeIfAbsent(nonTerminal, nonTerminal1 -> new LinkedList<>());
-            for (Node rhsElem : rule.getRHS()) {
-                if (rhsElem instanceof NonTerminal) {
-                    this.rules.putIfAbsent((NonTerminal) rhsElem, new LinkedList<>());
-                }
-            }
+            addMissingNonterminals(rule.getRHS());
             switch (dir) {
                 case LEFT:
                     this.rules.get(nonTerminal).add(0, rule);
@@ -149,17 +160,7 @@ public class ParseRuleStorage {
     }
 
     private Set<NonTerminal> getAllNonTerminals() {
-        Set<NonTerminal> res = new HashSet<>(rules.keySet());
-        for (Map.Entry<NonTerminal, List<ParseRule>> entry : rules.entrySet()) {
-            for (ParseRule rule : entry.getValue()) {
-                for (Node rhsElem : rule.getRHS()) {
-                    if (rhsElem instanceof NonTerminal) {
-                        res.add((NonTerminal) rhsElem);
-                    }
-                }
-            }
-        }
-        return res;
+        return allNonterminals;
     }
 
     void calculateFirst() throws UndefinedNontermException {

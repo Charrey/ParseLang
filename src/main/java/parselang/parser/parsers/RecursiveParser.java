@@ -158,7 +158,7 @@ public class RecursiveParser extends Parser{
 
     private ParseResult parseTerminal(String originalString, int notYetParsed, Terminal toParseTo) throws ParseErrorException {
         int size = toParseTo.getValue().length();
-        if (originalString.length() <= notYetParsed || (originalString.charAt(notYetParsed) == toParseTo.getValue().charAt(0) && originalString.substring(notYetParsed).startsWith(toParseTo.getValue()))) {
+        if (originalString.length() <= notYetParsed || (originalString.charAt(notYetParsed) == toParseTo.getValue().charAt(0) && subStringStartsWith(originalString, notYetParsed, toParseTo.getValue()))) {
             AST tree = new AST(toParseTo);
             tree.setParsed(originalString, notYetParsed, notYetParsed + size);
             farthestParse = Math.max(farthestParse, notYetParsed + size);
@@ -166,6 +166,16 @@ public class RecursiveParser extends Parser{
         } else {
             throw new ParseErrorException();
         }
+    }
+
+    private boolean subStringStartsWith(String originalString, int notYetParsed, String value) {
+        //return originalString.substring(notYetParsed).startsWith(value);
+        for (int i = 0; i < value.length(); i++) {
+            if (originalString.charAt(i + notYetParsed) != value.charAt(i)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private ParseResult parseWithRule(String originalString, int notYetParsed, ParseRule ruleToTry, ParseRuleStorage storage, NonTerminal toplevel) throws ParseErrorException {

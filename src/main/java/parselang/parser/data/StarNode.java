@@ -35,10 +35,6 @@ public class StarNode extends Node {
         }
     }
 
-    public List<Node> children() {
-        return new ArrayList<>(Arrays.asList(inner));
-    }
-
     @Override
     public boolean equals(Object obj) {
         return obj instanceof StarNode && (obj == this || Arrays.equals(((StarNode) obj).inner, inner));
