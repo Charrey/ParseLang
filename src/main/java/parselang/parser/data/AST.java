@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class AST extends ASTElem implements Evaluator {
+public class AST extends ASTElem  {
 
     private final ParseRuleStorage storage;
     private ParseRule ruleApplied;
@@ -55,12 +55,6 @@ public class AST extends ASTElem implements Evaluator {
             System.err.println("Warning! Attempting to add child to leaf AST node");
         }
     }
-
-    @Override
-    public Value evaluate() {
-        return null;
-    }
-
 
     public String toString() {
         return pp(0);

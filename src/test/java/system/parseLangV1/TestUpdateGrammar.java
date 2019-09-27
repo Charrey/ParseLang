@@ -1,5 +1,6 @@
 package system.parseLangV1;
 
+import javafx.util.Pair;
 import org.junit.Test;
 import parselang.parser.ParseResult;
 import parselang.parser.data.*;
@@ -7,9 +8,11 @@ import parselang.parser.exceptions.ParseErrorException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static parselang.parser.ParseRuleStorage.nonTerm;
 import static parselang.parser.ParseRuleStorage.term;
 
 public class TestUpdateGrammar extends ParseLangV1TestCase {
@@ -82,12 +85,29 @@ public class TestUpdateGrammar extends ParseLangV1TestCase {
         assertTrue(node instanceof StarNode);
         StarNode starNode = (StarNode) node;
         assertEquals(2, starNode.children().size());
-
         assertEquals(term("bar"), starNode.children().get(1));
-
         assertTrue(starNode.children().get(0) instanceof StarNode);
         StarNode firstChild = (StarNode) starNode.children().get(0);
         assertEquals(1, firstChild.children().size());
         assertEquals(term("foo"), firstChild.children().get(0));
+    }
+
+    @Test
+    public void testNamedToken() throws IOException, ParseErrorException {
+        String program = readString("updateGrammar/namedToken.plang");
+        ParseResult result = parser.readFile(storage, program, new NonTerminal("HighLevel"));
+        assertEquals("", result.getRemaining());
+        assertEquals(program, result.getParsed());
+
+        Set<Pair<ParseRule, Direction>> addedRules = storage.getAddedRules();
+        assertTrue(addedRules.contains(new Pair<>(new ParseRule("Expression").addRhs(nonTerm("FooExpression")), Direction.LEFT)));
+    }
+
+    @Test
+    public void testLazyToken() throws IOException, ParseErrorException {
+        String program = readString("updateGrammar/tokenDelayedExecution.plang");
+        ParseResult result = parser.readFile(storage, program, new NonTerminal("HighLevel"));
+        assertEquals("", result.getRemaining());
+        assertEquals(program, result.getParsed());
     }
 }

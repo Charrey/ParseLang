@@ -108,9 +108,15 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("BracketToken").addRhs(term("(")).addRhs(star(ws(), nonTerm("Token"))).addRhs(term(")")));
 
         rules.add(new ParseRule("Token").addRhs(nonTerm("BracketToken"), nonTerm("PotentialStar")));
-        rules.add(new ParseRule("Token").addRhs(nonTerm("NonTerminal"), nonTerm("PotentialStar")));
+        rules.add(new ParseRule("Token").addRhs(nonTerm("NonTerminal"), nonTerm("PotentialStar"), ws(), nonTerm("PotentialVariable")));
+        rules.add(new ParseRule("PotentialVariable").addRhs(nonTerm("Variable")));
+        rules.add(new ParseRule("PotentialVariable"));
+
+        rules.add(new ParseRule("Variable").addRhs(nonTerm("LowerCase"), star(nonTerm("UpperOrLowerCase")), nonTerm("PotentialLazy")));
+        rules.add(new ParseRule("PotentialLazy").addRhs(term("'")));
+        rules.add(new ParseRule("PotentialLazy"));
         rules.add(new ParseRule("PotentialStar").addRhs(term("*")));
-        rules.add(new ParseRule("PotentialStar").addRhs());
+        rules.add(new ParseRule("PotentialStar"));
 
         rules.add(new ParseRule("Comparator").addRhs(term("<")));
         rules.add(new ParseRule("Comparator").addRhs(term(">")));

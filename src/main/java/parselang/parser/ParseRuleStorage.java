@@ -96,6 +96,10 @@ public class ParseRuleStorage {
         return new Terminal(name);
     }
 
+    public static BoundNonTerminal bound(NonTerminal nonTerm, String name) {
+        return new BoundNonTerminal(nonTerm, name);
+    }
+
     public static Node star(Node... content) {
         return new StarNode(content);
     }
@@ -187,6 +191,9 @@ public class ParseRuleStorage {
                         continue;
                     }
                     for (Node rhsElem : rule.getRHS()) {
+                        if (rhsElem instanceof BoundNonTerminal) {
+                            continue;
+                        }
 
                         if (!first.containsKey(rhsElem)) {
                             throw new UndefinedNontermException(rhsElem);
@@ -248,6 +255,12 @@ public class ParseRuleStorage {
     }
 
     private Set<Character> firstOfList(List<Node> list) {
+        list = list.stream().map(node -> {
+            if (node instanceof BoundNonTerminal) {
+                node = ((BoundNonTerminal) node).getContent();
+            }
+            return node;
+        }).collect(Collectors.toList());
         if (list.isEmpty()) {
             return Collections.singleton(null);
         } else if (!first.get(list.get(0)).contains(null)) {
@@ -294,5 +307,9 @@ public class ParseRuleStorage {
                 }
             }
         }
+    }
+
+    public Set<Pair<ParseRule, Direction>> getAddedRules() {
+        return addedRules;
     }
 }

@@ -6,7 +6,6 @@ public class ParseRule {
 
     private final NonTerminal lhs;
     private List<Node> rhs = new LinkedList<>();
-    private Evaluator evaluator;
 
     private ParseRule(NonTerminal lhs) {
         this.lhs = lhs;
@@ -38,9 +37,7 @@ public class ParseRule {
         return rhs;
     }
 
-    private void setEvaluator(Evaluator evaluator) {
-        this.evaluator = evaluator;
-    }
+
 
     public String toString() {
         StringBuilder sb = new StringBuilder(lhs.toString());
@@ -84,8 +81,12 @@ public class ParseRule {
     private ParseRule copy() {
         ParseRule res = new ParseRule(this.lhs);
         res.addRhs(this.rhs.toArray(new Node[0]));
-        res.setEvaluator(this.evaluator);
         return res;
+    }
+
+    @Override
+    public int hashCode() {
+        return lhs.hashCode() + 3*rhs.hashCode();
     }
 
     public boolean equals(Object other) {
@@ -95,11 +96,7 @@ public class ParseRule {
         if (!lhs.equals(((ParseRule) other).lhs)) {
             return false;
         }
-        if (!rhs.equals(((ParseRule) other).rhs)) {
-            return false;
-        }
-
-        return Objects.equals(evaluator, ((ParseRule) other).evaluator);
+        return rhs.equals(((ParseRule) other).rhs);
     }
 
     public boolean hasRHS() {

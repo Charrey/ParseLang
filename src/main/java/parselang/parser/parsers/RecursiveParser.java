@@ -95,12 +95,20 @@ public class RecursiveParser extends Parser{
         String rootName = ((NonTerminal) nodeContainer.getRoot()).getName();
         if (rootName.equals("Token")) {
             List<Node> token = extractNodesFromTokenChild(originalString, (AST) nodeContainer.getChild(0));
+            List<Node> res;
             if (((AST)nodeContainer.getChild(1)).getChildren().size() == 1) {
-                return  Collections.singletonList(star(token));
+                res = Collections.singletonList(star(token));
             } else {
                 assert ((AST)nodeContainer.getChild(1)).getChildren().size() == 0;
-                return token;
+                res = token;
             }
+            if (((NonTerminal)((AST)nodeContainer.getChild(0)).getRoot()).getName().equals("NonTerminal") &&  ((AST)(nodeContainer.getChild(3))).getChildren().size() == 1) {
+                String name = ((AST)nodeContainer.getChild(3)).subString(originalString);
+                res = res.stream().map((Function<Node, Node>) node -> bound((NonTerminal)node, name)).collect(Collectors.toList());
+            } else {
+                System.out.println();
+            }
+            return res;
         } else if (rootName.contains("Token")) {
             List<List<Node>> nodesOfChildren = nodeContainer.getChildren().stream().map(ast -> extractNodes(originalString, ast)).collect(Collectors.toList());
             Stream<Node> stream = Stream.of();
