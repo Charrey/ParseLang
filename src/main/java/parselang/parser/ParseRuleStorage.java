@@ -5,18 +5,16 @@ import parselang.languages.Language;
 import parselang.parser.data.*;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ParseRuleStorage {
 
-    private List<ParseRule> originalRules;
     private Set<Pair<ParseRule, Direction>> addedRules;
 
-    private Map<NonTerminal, List<ParseRule>> rules = new HashMap<>();
-    private Map<Node, Set<Character>> first = new HashMap<>();
-    private Map<Node, Set<Character>> follow = new HashMap<>();
-    private Map<NonTerminal, Map<Character, LinkedHashSet<ParseRule>>> rulesPlus = new HashMap<>();
+    private final Map<NonTerminal, List<ParseRule>> rules = new HashMap<>();
+    private final Map<Node, Set<Character>> first = new HashMap<>();
+    private final Map<Node, Set<Character>> follow = new HashMap<>();
+    private final Map<NonTerminal, Map<Character, LinkedHashSet<ParseRule>>> rulesPlus = new HashMap<>();
 
 
     public void prepare(Language lang, NonTerminal toplevel) throws UndefinedNontermException {
@@ -70,9 +68,6 @@ public class ParseRuleStorage {
         if (!(nonTerminal instanceof NonTerminal)) {
             return new LinkedHashSet<>();
         }
-        if (((NonTerminal) nonTerminal).getName().contains("Number*")) {
-            System.out.println();
-        }
         if (rulesPlus.containsKey(nonTerminal)) {
             if (rulesPlus.get(nonTerminal).containsKey(startsWith)) {
                 return rulesPlus.get(nonTerminal).get(startsWith);
@@ -109,7 +104,7 @@ public class ParseRuleStorage {
     }
 
     private void setDefaults(Language language) {
-        originalRules = language.getRules();
+        List<ParseRule> originalRules = language.getRules();
         for (ParseRule rule : originalRules) {
             addRule(rule, Direction.RIGHT);
         }
@@ -181,13 +176,15 @@ public class ParseRuleStorage {
                 }
             }
         }
-        HashMap<Node, Set<Character>> firstCopy = null;
-        while (!first.equals(firstCopy)) {
-            firstCopy = deepCopy(first);
+        boolean changed = true;
+        while (changed) {
+           changed = false;
             for (NonTerminal nt : getAllNonTerminals()) {
                 for (ParseRule rule : rules.get(nt)) {
                     if (rule.getRHS().isEmpty()) {
-                        first.get(nt).add(null);
+                        if (first.get(nt).add(null)) {
+                            changed = true;
+                        }
                         continue;
                     }
                     for (Node rhsElem : rule.getRHS()) {
@@ -199,11 +196,15 @@ public class ParseRuleStorage {
                             throw new UndefinedNontermException(rhsElem);
                         }
 
-                        first.get(nt).addAll(first.get(rhsElem));
+                        if (first.get(nt).addAll(first.get(rhsElem))) {
+                            changed = true;
+                        }
                         if (!first.get(rhsElem).contains(null)) {
                             break;
                         }
-                        first.get(nt).add(null);
+                        if (first.get(nt).add(null)) {
+                            changed = true;
+                        }
                     }
                 }
             }
@@ -251,7 +252,6 @@ public class ParseRuleStorage {
                 }
             }
         }
-        System.out.println();
     }
 
     private Set<Character> firstOfList(List<Node> list) {
@@ -277,9 +277,9 @@ public class ParseRuleStorage {
             follow.put(nt, new HashSet<>());
         }
         follow.get(startSymbol).add(null);
-        HashMap<Node, Set<Character>> followCopy = null;
-        while (!follow.equals(followCopy)) {
-            followCopy = deepCopy(follow);
+        boolean changed = true;
+        while (changed) {
+            changed = false;
             for (NonTerminal nt : getAllNonTerminals()) {
                 for (ParseRule rule : rules.get(nt)) {
                     if (rule.getRHS().isEmpty()) {
@@ -287,10 +287,9 @@ public class ParseRuleStorage {
                     }
                     Node lastRhs = rule.getRHS().get(rule.getRHS().size()-1);
                     if (lastRhs instanceof NonTerminal) {
-                        if (!follow.containsKey(lastRhs)) {
-                            System.out.println();
+                        if (follow.get(lastRhs).addAll(follow.get(nt))) {
+                            changed = true;
                         }
-                        follow.get(lastRhs).addAll(follow.get(nt));
                     }
                     Set<Character> toAdd = new HashSet<>();
                     for (int i = rule.getRHS().size() - 2; i >= 0 ; i--) {
@@ -299,7 +298,9 @@ public class ParseRuleStorage {
                             continue;
                         }
                         toAdd.addAll(first.get(rule.getRHS().get(i + 1)));
-                        follow.get(rule.getRHS().get(i)).addAll(toAdd);
+                        if (follow.get(rule.getRHS().get(i)).addAll(toAdd)) {
+                            changed = true;
+                        }
                         if (!first.get(rule.getRHS().get(i)).contains(null)) {
                             toAdd = new HashSet<>();
                         }

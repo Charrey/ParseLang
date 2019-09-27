@@ -17,25 +17,30 @@ import static parselang.parser.ParseRuleStorage.*;
 public class RecursiveParser extends Parser{
 
     private int farthestParse;
-    private TreeFixer treeFixer = new TreeFixer();
+    private final TreeFixer treeFixer = new TreeFixer();
 
     @Override
     public synchronized ParseResult parse(String originalString, Node toParseTo, ParseRuleStorage storage, NonTerminal toplevel) throws ParseErrorException {
         farthestParse = 0;
-        ParseResult res =  parse(originalString, 0, toParseTo, storage, toplevel);
-        res.setTree((AST) treeFixer.fix(res.getTree()));
-        if (res.getRemainingIndex() < originalString.length()) {
+        try {
+            ParseResult res = parse(originalString, 0, toParseTo, storage, toplevel);
+            res.setTree((AST) treeFixer.fix(res.getTree()));
+            if (res.getRemainingIndex() < originalString.length()) {
+                throw new ParseErrorException(originalString, farthestParse);
+            }
+            return res;
+        } catch (ParseErrorException e) {
             throw new ParseErrorException(originalString, farthestParse);
         }
-        return res;
     }
 
     private ParseResult parse(String originalString, int notYetParsed, Node toParseTo, ParseRuleStorage storage, NonTerminal toplevel) throws ParseErrorException  {
         if (originalString.length() < notYetParsed) {
-            throw new ParseErrorException(originalString, notYetParsed);
+            throw new ParseErrorException();
         }
-        System.out.println(originalString.substring(notYetParsed).replace("\n", "").replace("\r", "") + "                                      " + toParseTo);
-
+        if (verbosity >= 1) {
+            System.out.println(originalString.substring(notYetParsed).replace("\n", "").replace("\r", "") + "                                      " + toParseTo);
+        }
         if (toParseTo instanceof NonTerminal) {
             NonTerminal toParseToNT = (NonTerminal) toParseTo;
              for (ParseRule ruleToTry : storage.getByNonTerminal(toParseToNT, notYetParsed == originalString.length() ? null : originalString.charAt(notYetParsed))) {
@@ -48,7 +53,7 @@ public class RecursiveParser extends Parser{
                 } catch (ParseErrorException ignored) {
                 }
             }
-            throw new ParseErrorException(originalString, notYetParsed);
+            throw new ParseErrorException();
         } else if (toParseTo instanceof Terminal) {
             return parseTerminal(originalString, notYetParsed, (Terminal) toParseTo);
         }
@@ -61,7 +66,7 @@ public class RecursiveParser extends Parser{
         String newNonTerminal = ((AST)tree.getChild(0)).subString(originalString);
         Direction insertion = ((AST)tree.getChild(2)).subString(originalString).equals("<") ? Direction.LEFT : Direction.RIGHT;
         String superNonTerminal = ((AST)tree.getChild(4)).subString(originalString);
-        List<Node> retrieveNodes = extractNodes(originalString, ((AST)tree.getChild(7)));
+        List<Node> retrieveNodes = extractNodes(originalString, tree.getChild(7));
 
         ParseRule ruleToAdd1 = new ParseRule(superNonTerminal).addRhs(nonTerm(newNonTerminal));
         ParseRule ruleToAdd2 = new ParseRule(newNonTerminal).addRhs(retrieveNodes.toArray(new Node[0]));
@@ -144,8 +149,7 @@ public class RecursiveParser extends Parser{
             case "NonTerminal":
                 return Collections.singletonList(nonTerm(tokenChild.subString(originalString)));
             case "BracketToken":
-                List<Node> innerTokens = extractNodes(originalString, tokenChild);
-                return innerTokens;
+                return extractNodes(originalString, tokenChild);
             default:
                 throw new UnsupportedOperationException("Not yet implemented");
         }
@@ -160,7 +164,7 @@ public class RecursiveParser extends Parser{
             farthestParse = Math.max(farthestParse, notYetParsed + size);
             return new ParseResult(originalString, notYetParsed + size, tree);
         } else {
-            throw new ParseErrorException(originalString, notYetParsed);
+            throw new ParseErrorException();
         }
     }
 

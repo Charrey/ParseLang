@@ -1,25 +1,20 @@
 package parselang.parser.data;
 
 import parselang.parser.ParseRuleStorage;
-import parselang.types.Value;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 public class AST extends ASTElem  {
 
-    private final ParseRuleStorage storage;
     private ParseRule ruleApplied;
     private final Node root;
-
-    private String originalString;
 
     private int parsedFrom;
     private int parsedTo;
 
 
-    private List<ASTElem> children = new LinkedList<>();
+    private final List<ASTElem> children = new LinkedList<>();
 
     public AST(Node root) {
         this(root, null);
@@ -31,11 +26,9 @@ public class AST extends ASTElem  {
 
     public AST(Node root, ParseRuleStorage storage) {
         this.root = root;
-        this.storage = storage;
     }
 
     public void setParsed(String original, int from, int to) {
-        originalString = original;
         parsedFrom = from;
         parsedTo = to;
     }

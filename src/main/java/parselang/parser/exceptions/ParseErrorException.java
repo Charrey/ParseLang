@@ -9,6 +9,10 @@ public class ParseErrorException extends Exception {
         this.index = index;
     }
 
+    public ParseErrorException() {
+        index = -1;
+    }
+
     private static String findRowColumn(String originalString, int index) {
         int row = 1;
         int otherchars = 1;

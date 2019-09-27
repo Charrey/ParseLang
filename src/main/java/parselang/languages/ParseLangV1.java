@@ -87,6 +87,10 @@ public class ParseLangV1 implements Language {
 
         rules.add(new ParseRule("UpperOrLowerCase").addRhs(nonTerm("LowerCase")));
         rules.add(new ParseRule("UpperOrLowerCase").addRhs(nonTerm("UpperCase")));
+        rules.add(new ParseRule("UpperOrLowerCaseOrNumber").addRhs(nonTerm("UpperOrLowerCase")));
+        rules.add(new ParseRule("UpperOrLowerCaseOrNumber").addRhs(nonTerm("Number")));
+
+
 
         rules.add(new ParseRule("SafeSpecial").addRhs(term(";")));
         rules.add(new ParseRule("SafeSpecial").addRhs(term("}")));
@@ -100,7 +104,7 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("SafeChar").addRhs(nonTerm("Number")));
         rules.add(new ParseRule("SafeChar").addRhs(nonTerm("SafeSpecial")));
 
-        rules.add(new ParseRule("NonTerminal").addRhs(nonTerm("UpperCase")).addRhs(star(nonTerm("UpperOrLowerCase"))));
+        rules.add(new ParseRule("NonTerminal").addRhs(nonTerm("UpperCase")).addRhs(star(nonTerm("UpperOrLowerCaseOrNumber"))));
 
         rules.add(new ParseRule("StringLiteral").addRhs(term("'"))
                 .addRhs(star(nonTerm("SafeChar"))).addRhs(term("'")));

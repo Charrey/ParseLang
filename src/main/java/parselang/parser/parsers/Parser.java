@@ -12,6 +12,8 @@ import java.util.logging.Logger;
 
 public abstract class Parser {
 
+    protected int verbosity = 1;
+
     public abstract List<Node> extractNodes(String originalString, ASTElem nodeContainer);
 
 
@@ -28,4 +30,7 @@ public abstract class Parser {
 
     Logger log = Logger.getLogger(RecursiveParser.class.getName());
 
+    public void setVerbosity(int level) {
+        this.verbosity = level;
+    }
 }
