@@ -18,6 +18,5 @@ public class TestDemo extends ParseLangV1TestCase {
         ParseResult result = parser.readFile(storage, program, nonTerm("HighLevel"));
         assertEquals("", result.getRemaining());
         assertEquals(program, result.getParsed());
-        System.out.println(result.getTree());
     }
 }

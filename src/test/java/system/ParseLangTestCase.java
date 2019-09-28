@@ -33,7 +33,6 @@ public abstract class ParseLangTestCase {
         ParseResult result = parser.readFile(storage, program, toplevel);
         assertEquals("", result.getRemaining());
         assertEquals(program, result.getParsed());
-        System.out.println(result.getTree());
     }
 
 

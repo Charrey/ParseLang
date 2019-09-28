@@ -21,6 +21,7 @@ public abstract class ParseLangTreesTestCase extends ParseLangTestCase {
         storage = new ParseRuleStorage();
         storage.prepare(new ParseLangTest(), new NonTerminal("Level1"));
         parser = new RecursiveParser();
+        parser.setVerbosity(0);
     }
 
     void test(String file) throws IOException, ParseErrorException {

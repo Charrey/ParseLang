@@ -21,7 +21,6 @@ public class StressTest extends ParseLangV1TestCase {
     public void testManyDecls() throws IOException, ParseErrorException {
         String program = readString("stresstesting/manyDecls.plang");
         long start = System.currentTimeMillis();
-        parser.setVerbosity(0);
         ParseResult result = parser.readFile(storage, program, new NonTerminal("HighLevel"));
         long millis = System.currentTimeMillis() - start;
         Set<AST> declarations = analytics.searchByRoot(result.getTree(), nonTerm("Declaration"));
@@ -36,9 +35,15 @@ public class StressTest extends ParseLangV1TestCase {
     @Test
     public void testComplexDecl() throws IOException, ParseErrorException {
         String program = readString("stresstesting/ComplexDecl.plang");
+        long start = System.currentTimeMillis();
         ParseResult result = parser.readFile(storage, program, new NonTerminal("HighLevel"));
+        long millis = System.currentTimeMillis() - start;
+        Set<AST> declarations = analytics.searchByRoot(result.getTree(), nonTerm("Declaration"));
+        assertEquals(1, declarations.size());
         assertEquals("", result.getRemaining());
         assertEquals(program, result.getParsed());
+        System.out.println(millis/1000.0 + " seconds");
+        System.out.println(millis/(1000.0 * declarations.size()) + " seconds per declaration");
     }
 
 }
