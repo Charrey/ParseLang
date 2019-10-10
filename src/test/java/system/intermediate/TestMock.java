@@ -1,10 +1,6 @@
 package system.intermediate;
 
 import org.junit.Test;
-import parselang.intermediate.Declaration;
-import parselang.intermediate.NonTerminalParameter;
-import parselang.intermediate.Program;
-import parselang.intermediate.TerminalParameter;
 
 public class TestMock {
 

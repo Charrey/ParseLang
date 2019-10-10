@@ -4,13 +4,17 @@ import parselang.parser.UndefinedNontermException;
 import parselang.parser.data.*;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class NaiveFirstPlusCalculator implements FirstPlusCalculator {
+public class NaiveFirstPlusCalculator extends FirstPlusCalculator {
+
+    private static final LinkedHashSet<ParseRule> EMPTY_LINKED_HASHSET = new LinkedHashSet<>();
     @Override
-    public void updateFirstPlus(Map<NonTerminal, Map<Character, LinkedHashSet<ParseRule>>> rulesPlus, Map<NonTerminal, List<ParseRule>> rules, Map<Node, Set<Character>> first, Map<Node, Set<Character>> follow, Collection<Terminal> terminals, Collection<NonTerminal> nonTerminals) {
+    public void computeFirstPlus(Map<NonTerminal, Map<Character, LinkedHashSet<ParseRule>>> rulesPlus, Map<NonTerminal, List<ParseRule>> rules, Map<Node, Set<Character>> first, Map<Node, Set<Character>> follow, Collection<Terminal> terminals, Collection<NonTerminal> nonTerminals) {
+        start();
         for (NonTerminal nonTerminal : nonTerminals) {
-            rulesPlus.put(nonTerminal, new HashMap<>());
+            rulesPlus.computeIfAbsent(nonTerminal, nonTerminal1 -> new HashMap<>());
         }
         for (NonTerminal nonTerminal : nonTerminals) {
             for (ParseRule rule : rules.get(nonTerminal)) {
@@ -18,7 +22,7 @@ public class NaiveFirstPlusCalculator implements FirstPlusCalculator {
                 for (Character character : firstOfRhs) {
                     rulesPlus.get(nonTerminal).computeIfAbsent(character, character1 -> new LinkedHashSet<>());
                     rulesPlus.get(nonTerminal).get(character).add(rule);
-                    rulesPlus.get(nonTerminal).get(character).addAll(rulesPlus.get(nonTerminal).getOrDefault(null, new LinkedHashSet<>()));
+                    rulesPlus.get(nonTerminal).get(character).addAll(rulesPlus.get(nonTerminal).getOrDefault(null, EMPTY_LINKED_HASHSET));
                 }
                 if (firstOfRhs.contains(null)) {
                     for (Character character : follow.get(nonTerminal)) {
@@ -28,6 +32,7 @@ public class NaiveFirstPlusCalculator implements FirstPlusCalculator {
                 }
             }
         }
+        stop();
         for (NonTerminal nonTerminal : nonTerminals) {
             if (rulesPlus.get(nonTerminal).containsKey(null)) {
                 for (Map.Entry<Character, LinkedHashSet<ParseRule>> rule : rulesPlus.get(nonTerminal).entrySet()) {

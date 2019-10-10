@@ -6,15 +6,14 @@ import parselang.parser.data.ASTElem;
 import parselang.parser.data.Node;
 import parselang.parser.data.NonTerminal;
 import parselang.parser.exceptions.ParseErrorException;
+import parselang.util.TimedClass;
 
 import java.util.List;
 import java.util.logging.Logger;
 
-public abstract class Parser {
+public abstract class Parser extends TimedClass {
 
     protected int verbosity = 1;
-
-    public abstract List<Node> extractNodes(String originalString, ASTElem nodeContainer);
 
 
     abstract ParseResult parse(String originalString, Node toParseTo, ParseRuleStorage storage, NonTerminal toplevel) throws ParseErrorException;

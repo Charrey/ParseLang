@@ -128,6 +128,8 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("Sentence").addRhs(nonTerm("Expression")));
 
         rules.add(new ParseRule("Sentence").addRhs(term("return"), ws(), nonTerm("Expression")));
+        rules.add(new ParseRule("Sentence").addRhs(term("print"), ws(), nonTerm("Expression")));
+
 
         rules.add(new ParseRule("NumberLiteral").addRhs(term("0")));
         rules.add(new ParseRule("NumberLiteral").addRhs(nonTerm("NonZeroNumber"), star(nonTerm("Number"))));
@@ -143,13 +145,7 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("SimpleExpression").addRhs(nonTerm("StringLiteral"), ws()));
         rules.add(new ParseRule("SimpleExpression").addRhs(nonTerm("BooleanLiteral"), ws()));
 
-
-
-
-        //rules.add(new ParseRule("PlusExpression").addRhs(nonTerm("Expression"), ws(), term("+"), ws(), nonTerm("Expression")));
-        //rules.add(new ParseRule("PowerExpression").addRhs(nonTerm("Expression"), term("^"), nonTerm("Expression")));
-        //rules.add(new ParseRule("Expression").addRhs(nonTerm("PlusExpression")));
-        //rules.add(new ParseRule("Expression").addRhs(nonTerm("PowerExpression")));
+        rules.add(new ParseRule("DeclarationContent").addRhs(star(nonTerm("Sentence"), term(";"), ws())));
 
         rules.add(new ParseRule("Declaration").addRhs(
                 nonTerm("NonTerminal"),
@@ -162,7 +158,8 @@ public class ParseLangV1 implements Language {
                 star(ws(), nonTerm("Token")),
                 ws(),
                 term("{"),
-                star(ws(), nonTerm("Sentence"), term(";")),
+                ws(),
+                nonTerm("DeclarationContent"),
                 ws(),
                 term("}")
         ));

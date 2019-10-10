@@ -1,5 +1,7 @@
 package parselang.parser;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import javafx.util.Pair;
 import parselang.languages.Language;
 import parselang.parser.data.*;
@@ -18,10 +20,13 @@ public class ParseRuleStorage {
     private final Map<NonTerminal, Map<Character, LinkedHashSet<ParseRule>>> rulesPlus = new HashMap<>();
     private final Set<NonTerminal> allNonterminals = new HashSet<>();
 
-    private final FirstCalculator firstCalc = new NaiveFirstCalculator();
-    private final FollowCalculator followCalc = new NaiveFollowCalculator();
-    private final FirstPlusCalculator firstPlusCalc = new NaiveFirstPlusCalculator();
+    public final FirstCalculator firstCalc = new NaiveFirstCalculator();
+    public final FollowCalculator followCalc = new NaiveFollowCalculator();
+    public final FirstPlusCalculator firstPlusCalc = new NaiveFirstPlusCalculator();
 
+    private Map<AST, Pair<ParseRule, ParseRule>> addedRulesHistory = new HashMap<>();
+    private BiMap<ParseRule, Integer> rulesByID = HashBiMap.create(); //index = ruleID;
+    private int idCounter = 0;
 
 
 
@@ -33,11 +38,13 @@ public class ParseRuleStorage {
         calculateFirstPlus();
     }
 
-    public void addCustomRules(Collection<Pair<ParseRule, Direction>> customRules, NonTerminal toplevel) {
-        addedRules.addAll(customRules);
-        for (Pair<ParseRule, Direction> rule : customRules) {
-            addRule(rule.getKey(), rule.getValue());
-        }
+    public void addCustomRules(AST source, Pair<ParseRule, Direction> inheritedRule, Pair<ParseRule, Direction> addedRule, NonTerminal toplevel) {
+        addedRules.add(inheritedRule);
+        addedRules.add(addedRule);
+        addedRulesHistory.put(source, new Pair<>(inheritedRule.getKey(), addedRule.getKey()));
+        rulesByID.put(addedRule.getKey(), idCounter++);
+        addRule(inheritedRule.getKey(), inheritedRule.getValue());
+        addRule(addedRule.getKey(), addedRule.getValue());
         try {
             calculateFirst();
         } catch (UndefinedNontermException e) {
@@ -49,7 +56,8 @@ public class ParseRuleStorage {
     }
 
     private void addRule(ParseRule rule, Direction dir) {
-        addRules(rule.convertStarNodes(), dir);
+        List<ParseRule> rules = rule.convertStarNodes();
+        addRules(rules, dir);
     }
 
     private void addMissingNonterminals(Collection<Node> nodes) {
@@ -105,6 +113,10 @@ public class ParseRuleStorage {
         return new NonTerminal(name);
     }
 
+    public static NonTerminal nonTerm(String name, NonTerminal.SpecialStatus status) {
+        return new NonTerminal(name, status);
+    }
+
     public static Terminal term(String name) {
         return new Terminal(name);
     }
@@ -125,6 +137,7 @@ public class ParseRuleStorage {
         List<ParseRule> originalRules = language.getRules();
         for (ParseRule rule : originalRules) {
             addRule(rule, Direction.RIGHT);
+            rulesByID.put(rule, idCounter++);
         }
     }
 
@@ -166,7 +179,7 @@ public class ParseRuleStorage {
         return res;
     }
 
-    private Set<NonTerminal> getAllNonTerminals() {
+    public Set<NonTerminal> getAllNonTerminals() {
         return allNonterminals;
     }
 
@@ -175,14 +188,35 @@ public class ParseRuleStorage {
     }
 
     private void calculateFirstPlus() {
-        firstPlusCalc.updateFirstPlus(rulesPlus, rules, first, follow, getAllTerminals(), getAllNonTerminals());
+        firstPlusCalc.computeFirstPlus(rulesPlus, rules, first, follow, getAllTerminals(), getAllNonTerminals());
     }
 
     private void calculateFollow(NonTerminal startSymbol) {
         followCalc.updateFollow(follow, startSymbol, first, rules, getAllTerminals(), getAllNonTerminals());
     }
 
-    public Set<Pair<ParseRule, Direction>> getAddedRules() {
+    public Set<Pair<ParseRule, Direction>> getAddedRulesDirections() {
         return addedRules;
+    }
+
+    public Set<ParseRule> getAddedRules() {
+        return addedRules.stream().map(Pair::getKey).collect(Collectors.toSet());
+    }
+
+
+    public Pair<ParseRule, ParseRule> getAddedRulesHistory(AST declaration) {
+        return addedRulesHistory.get(declaration);
+    }
+
+    public Integer getIDbyRule(ParseRule key) {
+        return rulesByID.get(key);
+    }
+
+    public ParseRule getRuleByID(Integer id) {
+        return rulesByID.inverse().get(id);
+    }
+
+    public Integer getIDSpace() {
+        return rulesByID.size();
     }
 }

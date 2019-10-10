@@ -8,9 +8,10 @@ import parselang.parser.data.Terminal;
 
 import java.util.*;
 
-public class NaiveFollowCalculator implements FollowCalculator {
+public class NaiveFollowCalculator extends FollowCalculator {
     @Override
     public void updateFollow(Map<Node, Set<Character>> follow, Node startSymbol, Map<Node, Set<Character>> first, Map<NonTerminal, List<ParseRule>> rules, Collection<Terminal> terminals, Collection<NonTerminal> nonTerminals) {
+        start();
         for (NonTerminal nt : nonTerminals) {
             follow.put(nt, new HashSet<>());
         }
@@ -46,5 +47,6 @@ public class NaiveFollowCalculator implements FollowCalculator {
                 }
             }
         }
+        stop();
     }
 }

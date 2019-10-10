@@ -15,17 +15,17 @@ import java.util.stream.Stream;
 public class Analytics {
 
     //Not made to be fast. Only for testing.
-    public Set<AST> searchByRoot(AST tree, Node root) {
+    public List<AST> searchByRoot(AST tree, Node root) {
         if (tree.getRoot().equals(root)) {
-            return Collections.singleton(tree);
+            return Collections.singletonList(tree);
         } else {
             return searchByRoot(tree.getChildren().stream(), root);
         }
     }
 
     //Not made to be fast. Only for testing.
-    private Set<AST> searchByRoot(Stream<ASTElem> tree, Node root) {
-      Stream<Set<AST>> a = tree.map(astElem -> {
+    private List<AST> searchByRoot(Stream<ASTElem> tree, Node root) {
+      Stream<List<AST>> a = tree.map(astElem -> {
           if (astElem instanceof AST) {
               return searchByRoot((AST) astElem, root);
           } else if (astElem instanceof ASTElemList) {
@@ -34,6 +34,6 @@ public class Analytics {
               throw new UnsupportedOperationException();
           }
       });
-      return a.map(Collection::stream).reduce(Stream.empty(), Stream::concat).collect(Collectors.toSet());
+      return a.map(Collection::stream).reduce(Stream.empty(), Stream::concat).collect(Collectors.toList());
     }
 }

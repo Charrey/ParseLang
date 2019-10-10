@@ -1,6 +1,5 @@
 package system;
 
-import org.junit.Before;
 import parselang.filereader.FileReader;
 import parselang.parser.ParseResult;
 import parselang.parser.ParseRuleStorage;
@@ -20,12 +19,12 @@ public abstract class ParseLangTestCase {
     protected Parser parser;
 
 
-    protected String readString(String path) throws IOException {
+    protected String readResource(String path) throws IOException {
         return fileReader.readStringFromFile(new File(this.getClass().getResource(path).getFile()).getAbsolutePath());
     }
 
-    protected void testFile(String file, NonTerminal toplevel) throws IOException, ParseErrorException {
-        String contentsToExecute = readString(file);
+    protected void testResource(String file, NonTerminal toplevel) throws IOException, ParseErrorException {
+        String contentsToExecute = readResource(file);
         testString(contentsToExecute, toplevel);
     }
 

@@ -3,7 +3,6 @@ package system.trees;
 import org.junit.Before;
 import parselang.filereader.FileReader;
 import parselang.languages.ParseLangTest;
-import parselang.languages.ParseLangV1;
 import parselang.parser.ParseRuleStorage;
 import parselang.parser.UndefinedNontermException;
 import parselang.parser.data.NonTerminal;
@@ -25,7 +24,7 @@ public abstract class ParseLangTreesTestCase extends ParseLangTestCase {
     }
 
     void test(String file) throws IOException, ParseErrorException {
-        super.testFile(file, new NonTerminal("Level1"));
+        super.testResource(file, new NonTerminal("Level1"));
     }
 
 }

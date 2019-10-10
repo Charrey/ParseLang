@@ -26,7 +26,7 @@ public class BoundNonTerminal extends Node {
 
     }
 
-    private String getName() {
+    public String getName() {
         return name;
     }
 
@@ -34,4 +34,5 @@ public class BoundNonTerminal extends Node {
     public int hashCode() {
         return name.hashCode() + 3*nonTerm.hashCode();
     }
+
 }

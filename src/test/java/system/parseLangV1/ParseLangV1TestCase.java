@@ -26,7 +26,7 @@ public abstract class ParseLangV1TestCase extends ParseLangTestCase {
     }
 
     void testFile(String file) throws IOException, ParseErrorException {
-        super.testFile(file, new NonTerminal("HighLevel"));
+        super.testResource(file, new NonTerminal("HighLevel"));
     }
 
 

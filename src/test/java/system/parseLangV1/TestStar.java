@@ -14,7 +14,7 @@ public class TestStar extends ParseLangV1TestCase {
 
     @Test
     public void testNumberLiteral() throws IOException, ParseErrorException {
-        String contentsToExecute = readString("general/emptydecl.plang");
+        String contentsToExecute = readResource("general/emptydecl.plang");
         ParseResult result = parser.readFile(storage, contentsToExecute, new NonTerminal("HighLevel"));
         assertEquals("", result.getRemaining());
         assertEquals(contentsToExecute, result.getParsed());

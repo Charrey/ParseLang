@@ -16,6 +16,12 @@ public final class NonTerminal extends Node {
         this.name = name;
     }
 
+    public NonTerminal(String name, SpecialStatus status) {
+        this.name = name;
+        this.status = status;
+    }
+
+
     private SpecialStatus status = SpecialStatus.NONE;
 
     public void setSpecialStatus(SpecialStatus specialStatus){

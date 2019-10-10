@@ -14,7 +14,7 @@ public class TestDemo extends ParseLangV1TestCase {
 
     @Test
     public void testDemo() throws IOException, ParseErrorException {
-        String program = readString("bad.plang");
+        String program = readResource("bad.plang");
         ParseResult result = parser.readFile(storage, program, nonTerm("HighLevel"));
         assertEquals("", result.getRemaining());
         assertEquals(program, result.getParsed());

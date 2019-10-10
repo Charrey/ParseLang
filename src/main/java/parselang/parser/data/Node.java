@@ -4,4 +4,5 @@ public abstract class Node {
     //StarNode
     //Terminal
     //NonTerminal
+    //BoundNonTerminal
 }

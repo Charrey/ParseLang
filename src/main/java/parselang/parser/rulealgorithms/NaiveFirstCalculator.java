@@ -4,24 +4,25 @@ import parselang.parser.UndefinedNontermException;
 import parselang.parser.data.*;
 
 import java.util.*;
+import java.util.function.Function;
 
-public class NaiveFirstCalculator implements FirstCalculator {
+public class NaiveFirstCalculator extends FirstCalculator {
 
     @Override
     public void updateFirst(Map<Node, Set<Character>> first, Map<NonTerminal, List<ParseRule>> rules, Collection<Terminal> terminals, Collection<NonTerminal> nonTerminals) throws UndefinedNontermException {
+        start();
         for (Terminal term : terminals) {
-            first.put(term, Collections.singleton(term.getValue().charAt(0)));
+            first.computeIfAbsent(term, node -> Collections.singleton(term.getValue().charAt(0)));
         }
         for (NonTerminal nt : nonTerminals) {
-            first.put(nt, new HashSet<>());
-        }
-        for (NonTerminal nt : nonTerminals) {
+            first.computeIfAbsent(nt, node -> new HashSet<>());
             for (ParseRule rule : rules.get(nt)) {
                 if (rule.getRHS().size() > 0 && rule.getRHS().get(0) instanceof Terminal) {
                     first.get(nt).add((((Terminal) rule.getRHS().get(0)).getValue().charAt(0)));
                 }
             }
         }
+
         boolean changed = true;
         while (changed) {
             changed = false;
@@ -35,13 +36,8 @@ public class NaiveFirstCalculator implements FirstCalculator {
                     }
                     for (Node rhsElem : rule.getRHS()) {
                         if (rhsElem instanceof BoundNonTerminal) {
-                            continue;
+                            continue; //TODO: fix
                         }
-
-                        if (!first.containsKey(rhsElem)) {
-                            throw new UndefinedNontermException(rhsElem);
-                        }
-
                         if (first.get(nt).addAll(first.get(rhsElem))) {
                             changed = true;
                         }
@@ -55,5 +51,6 @@ public class NaiveFirstCalculator implements FirstCalculator {
                 }
             }
         }
+        stop();
     }
 }
