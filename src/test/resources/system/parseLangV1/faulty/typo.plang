@@ -1,5 +1,5 @@
 
 
 FooExpression < Expression = 'foo' {
-    return 2 ++  2 * 2;
+    print 2 ++  2 * 2;
 }

@@ -1,6 +1,6 @@
 package parselang.interpreter;
 
-import parselang.intermediate.IntermediateWriter;
+import parselang.intermediate.ASTWriter;
 import parselang.intermediate.dataholders.Program;
 import parselang.languages.ParseLangV1;
 import parselang.parser.ParseResult;
@@ -11,6 +11,7 @@ import parselang.parser.exceptions.ParseErrorException;
 import parselang.parser.parsers.Parser;
 import parselang.parser.parsers.RecursiveParser;
 import parselang.util.Sanitizer;
+import parselang.writer.FruityWriter;
 import parselang.writer.JavaSourceWriter;
 
 import java.io.File;
@@ -28,13 +29,13 @@ public class Interpreter {
         byte[] encoded = Files.readAllBytes(Paths.get(args[0]));
         String program = new String(encoded, Charset.defaultCharset());
         Parser parser = new RecursiveParser();
-        parser.setVerbosity(0);
+        parser.setVerbosity(1);
         ParseRuleStorage storage = new ParseRuleStorage();
         storage.prepare(new ParseLangV1(), new NonTerminal("HighLevel"));
         ParseResult result = parser.readFile(storage, program, nonTerm("HighLevel"));
-        IntermediateWriter intermediateWriter = new IntermediateWriter();
+        ASTWriter intermediateWriter = new ASTWriter();
         Program intermediate = intermediateWriter.write(new Sanitizer().classify(Paths.get(args[0]).toFile().getName().split("\\.")[0]), program, result.getTree(), storage);
-        new JavaSourceWriter().writeToFile(intermediate, new File("src/main/java"), storage);
+        new FruityWriter().writeToFile(intermediate, new File("src/main/java"), storage);
 
     }
 }

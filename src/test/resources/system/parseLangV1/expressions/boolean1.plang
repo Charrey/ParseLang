@@ -1,7 +1,7 @@
 FooExpression < SimpleExpression = 'foo' {
-    true;
+    exec true;
 }
 
 BarExpression < SimpleExpression = 'foo' {
-    false;
+    exec false;
 }

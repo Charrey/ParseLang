@@ -1,0 +1,3 @@
+GggEx < SimpleExpression = 'egg' {
+    print 365;
+}

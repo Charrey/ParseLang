@@ -3,16 +3,16 @@ package parselang.parser.data;
 public class BoundNonTerminal extends Node {
 
     private final String name;
-    private final NonTerminal nonTerm;
+    private final Node nonTerm;
     private final boolean lazy;
 
-    public BoundNonTerminal(NonTerminal nonTerm, String name, boolean lazy) {
+    public BoundNonTerminal(Node nonTerm, String name, boolean lazy) {
         this.nonTerm = nonTerm;
         this.name = name;
         this.lazy = lazy;
     }
 
-    public NonTerminal getContent() {
+    public Node getContent() {
         return nonTerm;
     }
 
@@ -34,5 +34,10 @@ public class BoundNonTerminal extends Node {
     public int hashCode() {
         return name.hashCode() + 3*nonTerm.hashCode();
     }
+
+    public boolean isLazy() {
+        return lazy;
+    }
+
 
 }

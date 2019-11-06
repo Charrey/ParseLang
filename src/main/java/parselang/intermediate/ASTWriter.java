@@ -12,16 +12,16 @@ import java.util.stream.Collectors;
 
 import static parselang.parser.ParseRuleStorage.nonTerm;
 
-public class IntermediateWriter {
+public class ASTWriter {
 
     public Program write(String programName, String originalString, AST tree, ParseRuleStorage storage) {
         List<AST> declarations = new Analytics().searchByRoot(tree, nonTerm("Declaration"));
-        Program program = new Program(programName, storage.getAllNonTerminals());
+        Program program = new Program(programName);
         for (AST declaration : declarations) {
             Pair<ParseRule, ParseRule> associatedRules = storage.getAddedRulesHistory(declaration);
             DeclarationTree declTree = new DeclarationTree(originalString, declaration);
             DeclUse sentences = (DeclUse) generateDeclUseFromASTOrASTElemList(originalString, declaration.getChild(11), storage);
-            Declaration toAdd = new Declaration(declTree.name, storage.getIDbyRule(associatedRules.getValue().getOrigin()), declTree.superNonTerminal, declTree.retrievedNodes, sentences);
+            Declaration toAdd = new Declaration(declTree.name, storage.getIDbyRule(associatedRules.getValue().getOrigin()), storage.getIDbyRule(associatedRules.getKey().getOrigin()), declTree.superNonTerminal, declTree.retrievedNodes, sentences);
             program.addDeclaration(toAdd);
         }
         return program;
@@ -46,7 +46,12 @@ public class IntermediateWriter {
     }
 
     private DeclUse generateDeclUse(String originalString, AST tree, ParseRuleStorage storage) {
-        int ruleUsed = storage.getIDbyRule(tree.getRule().getOrigin());
+        int ruleUsed = 0;
+        try {
+            ruleUsed = storage.getIDbyRule(tree.getRule().getOrigin());
+        } catch (NullPointerException foo){
+            System.out.println();
+        }
         if (tree.getRoot() instanceof Terminal) {
             return new DeclUse(tree.subString(originalString));
         }

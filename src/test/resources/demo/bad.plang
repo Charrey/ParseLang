@@ -1,10 +1,10 @@
 
 
 AnimalExpression < SimpleExpression = 'flubbebabbedoe' {
-    return 5;
+    print 5;
 }
 
 
 FooExpression < SimpleExpression = 'hey' {
-    return flubbebabbedoe;
+    print flubbebabbedoe;
 }

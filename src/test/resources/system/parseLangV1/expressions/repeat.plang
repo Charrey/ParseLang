@@ -1,0 +1,3 @@
+WhileExpression < SimpleExpression = 'while' WhiteSpace '(' WhiteSpace Condition d ')' BlockStat b' {
+    exec 2 +  2 * 2;
+}

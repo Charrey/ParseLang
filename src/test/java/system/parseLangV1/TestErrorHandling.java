@@ -16,7 +16,7 @@ public class TestErrorHandling extends ParseLangV1TestCase {
             testFile("faulty/forgotclosebracket.plang");
             fail();
         } catch (ParseErrorException e) {
-            assertEquals("No alternative at index (2:16) at EOF", e.getMessage());
+            assertEquals("No alternative at index (2:15) at EOF", e.getMessage());
         }
     }
 
@@ -26,7 +26,7 @@ public class TestErrorHandling extends ParseLangV1TestCase {
             testFile("faulty/typo.plang");
             fail();
         } catch (ParseErrorException e) {
-            assertEquals("No alternative at index (4:14) at +", e.getMessage());
+            assertEquals("No alternative at index (4:13) at +", e.getMessage());
         }
     }
 }

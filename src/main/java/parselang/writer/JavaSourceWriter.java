@@ -22,13 +22,6 @@ public class JavaSourceWriter extends Writer {
     private Sanitizer sanitizer = new Sanitizer();
     private Map<ParseRule, String> premadeMethods;
 
-    @Override
-    public void writeToFile(Program program, File target, ParseRuleStorage storage) throws IOException {
-        String toWrite = writeToString(program, storage);
-        try (PrintWriter out = new PrintWriter(target.toPath().resolve(program.getName() + ".java").toFile())) {
-            out.println(toWrite);
-        }
-    }
 
     @Override
     public String writeToString(Program program, ParseRuleStorage storage) {
@@ -150,31 +143,26 @@ public class JavaSourceWriter extends Writer {
 
         standardLib.put(new ParseRule("SimpleExpression").addRhs(nonTerm("NumberLiteral"), ws()), "(Object o1, Object o2) {\n\t\treturn o1;\n\t}\n");
         standardLib.put(new ParseRule("SimpleExpression").addRhs(nonTerm("StringLiteral"), ws()), "(Object o1, Object o2) {\n\t\treturn \"FFFFFF\";\n\t}\n");
+        standardLib.put(new ParseRule("SimpleExpression").addRhs(nonTerm("BooleanLiteral"), ws()), "(Object o1, Object o2) {\n\t\treturn \"foo123\";\n\t}\n");
+
         standardLib.put(new ParseRule("BooleanLiteral").addRhs(nonTerm("StringLiteral"), ws()), "(Object o1, Object o2) {\n\t\treturn \"FFFFFF\";\n\t}\n");
     }
 
 
 
-    private Object ruleFoo(Object o1, Object o2) {
-        Integer res = (Integer) o1;
-        for (List<Object> i : ((List<List<Object>>)o2)) {
-            res = 10*res +  (Integer)i.get(1);
-        }
-        return res;
-    }
-
 
     private void writeLibMethods(StringBuilder sb, Program program, ParseRuleStorage storage) {
         fillStandardLib();
         for (int i = 0; i < storage.getIDSpace(); i++) {
+            System.out.println(i);
             final int j = i;
             if (!storage.getAddedRules().contains(storage.getRuleByID(i))) {
                 ParseRule rule = storage.getRuleByID(i).getOrigin();
                 String toAdd = "";
                 if (standardLib.containsKey(rule)) {
-                    toAdd = "//" + rule.toString() + "\nprivate Object rule" + i + standardLib.get(rule) ;
+                    toAdd = "\t//" + rule.toString() + "\n\tprivate Object rule" + i + standardLib.get(rule) ;
                 } else {
-                    System.out.println();
+                    int o = 1;
                 }
                 sb.append(toAdd);
             }
@@ -183,6 +171,7 @@ public class JavaSourceWriter extends Writer {
 
     private void writeMethods(StringBuilder sb, Program program) {
         for (Declaration decl : program.getDeclarations()) {
+            //add actual rule
             sb.append("\tprivate Object rule" + decl.getRuleID() + "(");
             for (int i = 0; i < decl.getParams().size(); i++) {
                 sb.append("Object " + sanitizer.objectName(decl.getParams().get(i)));
@@ -193,12 +182,14 @@ public class JavaSourceWriter extends Writer {
             sb.append("){\n");
             sb.append("\t\tstore" + decl.getName() + ".push(new HashMap<>());\n");
 
-
             writeContent(decl.getContent(), sb, program);
 
             sb.append("\t\tstore" + decl.getName() + ".pop();\n");
-            sb.append("\t\treturn null;\n");
+            sb.append("\t\treturn res;\n");
             sb.append("\t}\n");
+
+            sb.append("\tprivate Object rule" + decl.getInheritedId() + "(Object o){return rule" + decl.getRuleID() + "();}\n\n");
+
         }
     }
 
@@ -206,7 +197,7 @@ public class JavaSourceWriter extends Writer {
         ArgumentList arguments = decl.getArgs();
         for (Argument arg : arguments) {
             String functionCall = constructFunctionCall(decl);
-            sb.append("\t\t" + functionCall + ";\n");
+            sb.append("\t\tObject res = " + functionCall + ";\n");
         }
     }
 
@@ -235,7 +226,7 @@ public class JavaSourceWriter extends Writer {
     }
 
     private void writeMain(StringBuilder sb, Program program) {
-        sb.append("public static void main(String[] args) {\n" +
+        sb.append("\tpublic static void main(String[] args) {\n" +
                 "\t\tnew Example().rule113(\"Hellothisismyexp\");\n" +
                 "\t}");
     }

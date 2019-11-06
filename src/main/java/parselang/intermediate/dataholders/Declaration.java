@@ -7,10 +7,10 @@ import java.util.List;
 
 public class Declaration extends Argument {
 
-
-    public Declaration(String name, int ID, String superDeclaration, List<Node> params, DeclUse content) {
+    public Declaration(String name, int newRule, int inheritedRule, String superDeclaration, List<Node> params, DeclUse content) {
         this.name = name;
-        this.ruleID = ID;
+        this.ruleID = newRule;
+        this.inheritedRule = inheritedRule;
         this.superDeclaration = superDeclaration;
         this.params = params;
         this.content = content;
@@ -18,6 +18,7 @@ public class Declaration extends Argument {
 
     private String name;
     private int ruleID;
+    private int inheritedRule;
     private String superDeclaration;
     private List<Node> params = new LinkedList<Node>();
     private DeclUse content;
@@ -48,5 +49,9 @@ public class Declaration extends Argument {
 
     public DeclUse getContent() {
         return content;
+    }
+
+    public int getInheritedId() {
+        return inheritedRule;
     }
 }

@@ -39,6 +39,14 @@ public class ArgumentList extends Argument implements Iterable<Argument> {
         return arguments.isEmpty();
     }
 
+    public int size() {
+        return arguments.size();
+    }
+
+    public Argument get(int i) {
+        return arguments.get(i);
+    }
+
     public enum Nature {
         RHS, STAR
     }

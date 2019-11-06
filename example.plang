@@ -1,3 +1,6 @@
+BarExpression < SimpleExpression =  {
+}
+
 FooExpression < Expression = SimpleExpression exp' {
-    print 10 * 10 + 6;
+    print 156;
 }

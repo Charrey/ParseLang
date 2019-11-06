@@ -1,0 +1,9 @@
+IfExpression < SimpleExpression = 'if' WhiteSpace '(' WhiteSpace Condition d ')' BlockStat b' {
+    try {
+    try {
+    throw d;
+    } catch true {
+    exec b;
+    }
+    } catch false {}
+}

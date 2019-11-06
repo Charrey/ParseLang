@@ -1,10 +1,7 @@
 package parselang.parser.rulealgorithms;
 
 import parselang.parser.UndefinedNontermException;
-import parselang.parser.data.Node;
-import parselang.parser.data.NonTerminal;
-import parselang.parser.data.ParseRule;
-import parselang.parser.data.Terminal;
+import parselang.parser.data.*;
 
 import java.util.*;
 
@@ -31,16 +28,26 @@ public class NaiveFollowCalculator extends FollowCalculator {
                         }
                     }
                     Set<Character> toAdd = new HashSet<>();
-                    for (int i = rule.getRHS().size() - 2; i >= 0 ; i--) {
-                        if (!(rule.getRHS().get(i) instanceof  NonTerminal)) {
+
+                    List<Node> rhscopy = new ArrayList<>(rule.getRHS());
+                    Collections.reverse(rhscopy);
+                    Deque<Node> toView = new ArrayDeque<>(rhscopy);
+
+                    while (!toView.isEmpty()) {
+                        Node last = toView.pop();
+                        if (last instanceof BoundNonTerminal) {
+                            toView.push(((BoundNonTerminal) last).getContent());
+                            continue;
+                        }
+                        if (!(toView.peek() instanceof  NonTerminal)) {
                             toAdd = new HashSet<>();
                             continue;
                         }
-                        toAdd.addAll(first.get(rule.getRHS().get(i + 1)));
-                        if (follow.get(rule.getRHS().get(i)).addAll(toAdd)) {
+                        toAdd.addAll(first.get(last));
+                        if (follow.get(toView.peek()).addAll(toAdd)) {
                             changed = true;
                         }
-                        if (!first.get(rule.getRHS().get(i)).contains(null)) {
+                        if (!first.get(toView.peek()).contains(null)) {
                             toAdd = new HashSet<>();
                         }
                     }

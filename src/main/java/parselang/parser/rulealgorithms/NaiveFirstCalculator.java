@@ -34,9 +34,12 @@ public class NaiveFirstCalculator extends FirstCalculator {
                         }
                         continue;
                     }
-                    for (Node rhsElem : rule.getRHS()) {
+                    Deque<Node> toConsider = new ArrayDeque<>(rule.getRHS());
+                    while (!toConsider.isEmpty()) {
+                        Node rhsElem = toConsider.pop();
                         if (rhsElem instanceof BoundNonTerminal) {
-                            continue; //TODO: fix
+                            toConsider.push(((BoundNonTerminal) rhsElem).getContent());
+                            continue;
                         }
                         if (first.get(nt).addAll(first.get(rhsElem))) {
                             changed = true;
@@ -48,6 +51,9 @@ public class NaiveFirstCalculator extends FirstCalculator {
                             changed = true;
                         }
                     }
+
+
+
                 }
             }
         }

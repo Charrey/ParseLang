@@ -24,10 +24,15 @@ public class ParseRuleStorage {
     public final FollowCalculator followCalc = new NaiveFollowCalculator();
     public final FirstPlusCalculator firstPlusCalc = new NaiveFirstPlusCalculator();
 
-    private Map<AST, Pair<ParseRule, ParseRule>> addedRulesHistory = new HashMap<>();
+    private Map<AST, Pair<ParseRule, ParseRule>> addedRulesHistory = new HashMap<>(); //(inheritedrule, actualrule)
     private BiMap<ParseRule, Integer> rulesByID = HashBiMap.create(); //index = ruleID;
+    private Map<String, Set<ParseRule>> temporary = new HashMap<>();
     private int idCounter = 0;
+    private int lastIdOfLib = -1;
 
+    public boolean isAddedRule(int id) {
+        return id > lastIdOfLib;
+    }
 
 
     public void prepare(Language lang, NonTerminal toplevel) throws UndefinedNontermException {
@@ -43,6 +48,7 @@ public class ParseRuleStorage {
         addedRules.add(addedRule);
         addedRulesHistory.put(source, new Pair<>(inheritedRule.getKey(), addedRule.getKey()));
         rulesByID.put(addedRule.getKey(), idCounter++);
+        rulesByID.put(inheritedRule.getKey(), idCounter++);
         addRule(inheritedRule.getKey(), inheritedRule.getValue());
         addRule(addedRule.getKey(), addedRule.getValue());
         try {
@@ -55,9 +61,10 @@ public class ParseRuleStorage {
         calculateFirstPlus();
     }
 
-    private void addRule(ParseRule rule, Direction dir) {
+    private List<ParseRule> addRule(ParseRule rule, Direction dir) {
         List<ParseRule> rules = rule.convertStarNodes();
         addRules(rules, dir);
+        return rules;
     }
 
     private void addMissingNonterminals(Collection<Node> nodes) {
@@ -121,8 +128,8 @@ public class ParseRuleStorage {
         return new Terminal(name);
     }
 
-    public static BoundNonTerminal bound(NonTerminal nonTerm, String name, boolean lazy) {
-        return new BoundNonTerminal(nonTerm, name, lazy);
+    public static BoundNonTerminal bound(Node node, String name, boolean lazy) {
+        return new BoundNonTerminal(node, name, lazy);
     }
 
     public static Node star(Node... content) {
@@ -139,6 +146,7 @@ public class ParseRuleStorage {
             addRule(rule, Direction.RIGHT);
             rulesByID.put(rule, idCounter++);
         }
+        this.lastIdOfLib = idCounter;
     }
 
 
@@ -218,5 +226,31 @@ public class ParseRuleStorage {
 
     public Integer getIDSpace() {
         return rulesByID.size();
+    }
+
+    public void addTemporary(String parameter, ParseRule ruleToAdd, NonTerminal toplevel) {
+        addedRules.add(new Pair<>(ruleToAdd, Direction.RIGHT));
+        rulesByID.put(ruleToAdd, idCounter++);
+        List<ParseRule> rulesAdded = addRule(ruleToAdd, Direction.RIGHT);
+        try {
+            calculateFirst();
+        } catch (UndefinedNontermException e) {
+            throw new RuntimeException();
+        }
+        calculateFollow(toplevel);
+        calculateFirstPlus();
+        temporary.computeIfAbsent(parameter, x -> new HashSet<>());
+        temporary.get(parameter).addAll(rulesAdded);
+    }
+
+    public void purgeTemporary(String parameter, NonTerminal toplevel) {
+        temporary.put(parameter, new HashSet<>());
+        try {
+            calculateFirst();
+        } catch (UndefinedNontermException e) {
+            throw new RuntimeException();
+        }
+        calculateFollow(toplevel);
+        calculateFirstPlus();
     }
 }

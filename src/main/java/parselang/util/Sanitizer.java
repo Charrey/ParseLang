@@ -38,9 +38,11 @@ public class Sanitizer {
         }
     }
 
-    public String makeStringConstant(String stringContent) {
-        StringBuilder sb = new StringBuilder("\"");
-        sb.append(stringContent.replaceAll("\t", "\\t").replaceAll("\r", "\\r").replaceAll("\n", "\\n"));
-        return sb.append("\"").toString();
+    public static String makeStringConstant(String stringContent) {
+        return "\"" + replaceSpecials(stringContent) + "\"";
+    }
+
+    public static String replaceSpecials(String in) {
+        return in.replaceAll("\t", "\\\\t").replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n");
     }
 }

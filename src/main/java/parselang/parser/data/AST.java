@@ -113,4 +113,12 @@ public class AST extends ASTElem  {
     public String subString(String originalString) {
         return originalString.substring(parsedFrom, parsedTo);
     }
+
+    public int getParsedTo() {
+        return parsedTo;
+    }
+
+    public int getParsedFrom() {
+        return parsedFrom;
+    }
 }
