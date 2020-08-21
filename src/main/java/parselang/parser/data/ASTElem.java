@@ -1,6 +1,8 @@
 package parselang.parser.data;
 
-public abstract class ASTElem {
+import parselang.interpreter.data.ParameterValue;
+
+public abstract class ASTElem implements ParameterValue {
 
     protected abstract String pp(int indent);
 

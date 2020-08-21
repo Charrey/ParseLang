@@ -1,8 +1,8 @@
 package parselang.parser.parsers;
 
-import javafx.util.Pair;
 import parselang.parser.ParseResult;
 import parselang.parser.data.NonTerminal;
+import parselang.util.Pair;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;

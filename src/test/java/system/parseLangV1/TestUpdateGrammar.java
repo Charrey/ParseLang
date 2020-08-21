@@ -1,10 +1,10 @@
 package system.parseLangV1;
 
-import javafx.util.Pair;
 import org.junit.Test;
 import parselang.parser.ParseResult;
 import parselang.parser.data.*;
 import parselang.parser.exceptions.ParseErrorException;
+import parselang.util.Pair;
 
 import java.io.IOException;
 import java.util.Set;
@@ -22,7 +22,8 @@ public class TestUpdateGrammar extends ParseLangV1TestCase {
         assertEquals("", result.getRemaining());
         assertEquals(program, result.getParsed());
         Set<Pair<ParseRule, Direction>> addedRules = storage.getAddedRulesDirections();
-        assertTrue(addedRules.contains(new Pair<>(new ParseRule("Expression").addRhs(nonTerm("FooExpression")), Direction.LEFT)));
+        Pair<ParseRule, Direction> expected1 = new Pair<>(new ParseRule("Expression").addRhs(nonTerm("FooExpression")), Direction.LEFT);
+        assertTrue(addedRules.contains(expected1));
         assertTrue(addedRules.contains(new Pair<>(new ParseRule("FooExpression").addRhs(term("foo"), term("bar"), nonTerm("Flop")), Direction.RIGHT)));
     }
 

@@ -1,7 +1,7 @@
 
 
 AnimalExpression < SimpleExpression = 'flubbebabbedoe' {
-    print 5;
+    exec 5;
 }
 
 

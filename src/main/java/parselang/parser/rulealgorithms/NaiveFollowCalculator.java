@@ -1,6 +1,5 @@
 package parselang.parser.rulealgorithms;
 
-import parselang.parser.UndefinedNontermException;
 import parselang.parser.data.*;
 
 import java.util.*;

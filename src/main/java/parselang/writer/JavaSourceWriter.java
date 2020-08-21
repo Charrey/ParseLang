@@ -154,7 +154,7 @@ public class JavaSourceWriter extends Writer {
     private void writeLibMethods(StringBuilder sb, Program program, ParseRuleStorage storage) {
         fillStandardLib();
         for (int i = 0; i < storage.getIDSpace(); i++) {
-            System.out.println(i);
+            //System.out.println(i);
             final int j = i;
             if (!storage.getAddedRules().contains(storage.getRuleByID(i))) {
                 ParseRule rule = storage.getRuleByID(i).getOrigin();

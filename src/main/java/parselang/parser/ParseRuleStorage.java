@@ -1,11 +1,12 @@
 package parselang.parser;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import javafx.util.Pair;
+
+import parselang.util.collections.HashBiMap;
 import parselang.languages.Language;
 import parselang.parser.data.*;
 import parselang.parser.rulealgorithms.*;
+import parselang.util.Pair;
+import parselang.util.collections.BiMap;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,8 +26,7 @@ public class ParseRuleStorage {
     public final FirstPlusCalculator firstPlusCalc = new NaiveFirstPlusCalculator();
 
     private Map<AST, Pair<ParseRule, ParseRule>> addedRulesHistory = new HashMap<>(); //(inheritedrule, actualrule)
-    private BiMap<ParseRule, Integer> rulesByID = HashBiMap.create(); //index = ruleID;
-    private Map<String, Set<ParseRule>> temporary = new HashMap<>();
+    private BiMap<ParseRule, Integer> rulesByID = new HashBiMap<>(); //index = ruleID;
     private int idCounter = 0;
     private int lastIdOfLib = -1;
 
@@ -228,10 +228,10 @@ public class ParseRuleStorage {
         return rulesByID.size();
     }
 
-    public void addTemporary(String parameter, ParseRule ruleToAdd, NonTerminal toplevel) {
+    public void addTemporary(ParseRule ruleToAdd, NonTerminal toplevel) {
         addedRules.add(new Pair<>(ruleToAdd, Direction.RIGHT));
         rulesByID.put(ruleToAdd, idCounter++);
-        List<ParseRule> rulesAdded = addRule(ruleToAdd, Direction.RIGHT);
+        addRule(ruleToAdd, Direction.RIGHT);
         try {
             calculateFirst();
         } catch (UndefinedNontermException e) {
@@ -239,12 +239,9 @@ public class ParseRuleStorage {
         }
         calculateFollow(toplevel);
         calculateFirstPlus();
-        temporary.computeIfAbsent(parameter, x -> new HashSet<>());
-        temporary.get(parameter).addAll(rulesAdded);
     }
 
     public void purgeTemporary(String parameter, NonTerminal toplevel) {
-        temporary.put(parameter, new HashSet<>());
         try {
             calculateFirst();
         } catch (UndefinedNontermException e) {

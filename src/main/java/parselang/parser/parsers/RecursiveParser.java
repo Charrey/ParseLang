@@ -1,24 +1,24 @@
 package parselang.parser.parsers;
 
-import javafx.util.Pair;
+
 import parselang.parser.ParseResult;
 import parselang.parser.ParseRuleStorage;
 import parselang.parser.TreeFixer;
 import parselang.parser.data.*;
 import parselang.parser.exceptions.ParseErrorException;
 import parselang.util.DeclarationTree;
-import parselang.util.NodeExtractor;
+import parselang.util.Pair;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
-import static parselang.parser.ParseRuleStorage.*;
+import static parselang.parser.ParseRuleStorage.nonTerm;
+import static parselang.parser.ParseRuleStorage.term;
 
 public class RecursiveParser extends Parser{
 
     private int farthestParse;
     private final TreeFixer treeFixer = new TreeFixer();
-    private final NodeExtractor nodeExtractor = new NodeExtractor();
 
     private final MaxSizeDoubleMap<Integer, Node, ParseResult> memo           = new MaxSizeDoubleMap<>(1000);
     private final MaxSizeDoubleMap<Integer, ParseRule, Integer> recursionDepth     = new MaxSizeDoubleMap<>(-1);
@@ -82,7 +82,7 @@ public class RecursiveParser extends Parser{
         } else {
             ruleToAdd = new ParseRule("ParameterName").addRhs(term(tree.subString(originalString)));
         }
-        storage.addTemporary("Parameter", ruleToAdd, toplevel);
+        storage.addTemporary(ruleToAdd, toplevel);
     }
 
     private void updateGrammar(String originalString, AST declaration, ParseRuleStorage storage, NonTerminal toplevel) {
@@ -128,7 +128,7 @@ public class RecursiveParser extends Parser{
         }
         recursionDepth.computeIfAbsent(notYetParsed, ruleToTry, a -> 0);
         recursionDepth.update(notYetParsed, ruleToTry, integer -> integer + 1);
-        System.out.println(recursionDepth.get(notYetParsed, ruleToTry));
+        //System.out.println(recursionDepth.get(notYetParsed, ruleToTry));
         int newlyParsed = notYetParsed;
         AST ast = new AST(ruleToTry.getLHS(), storage);
         Deque<Node> toTry = new ArrayDeque<>(ruleToTry.getRHS());

@@ -1,6 +1,5 @@
 package parselang.writer;
 
-import javafx.util.Pair;
 import parselang.intermediate.dataholders.*;
 import parselang.intermediate.fruity.*;
 import parselang.intermediate.fruity.expressions.*;
@@ -8,6 +7,7 @@ import parselang.intermediate.fruity.parameters.FruityParameter;
 import parselang.intermediate.fruity.sentences.*;
 import parselang.parser.ParseRuleStorage;
 import parselang.parser.data.*;
+import parselang.util.Pair;
 
 import java.util.*;
 

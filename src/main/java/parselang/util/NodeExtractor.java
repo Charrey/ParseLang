@@ -51,7 +51,7 @@ public class NodeExtractor {
                     boolean lazy = isLazy(variable);
                     String name = variable.subString(originalString);
                     String trimmedname = lazy ? name.substring(0, name.length()-1) : name;
-                    return res.stream().map((Function<Node, Node>) node -> bound((NonTerminal) node, trimmedname, lazy)).collect(Collectors.toList());
+                    return res.stream().map((Function<Node, Node>) node -> bound(node, trimmedname, lazy)).collect(Collectors.toList());
                 } else {
                     return res;
                 }

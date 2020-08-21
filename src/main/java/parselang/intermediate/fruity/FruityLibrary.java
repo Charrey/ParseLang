@@ -1,19 +1,16 @@
 package parselang.intermediate.fruity;
 
-import javafx.util.Pair;
-import parselang.intermediate.dataholders.DeclUse;
 import parselang.intermediate.fruity.expressions.FruityConstant;
-import parselang.intermediate.fruity.expressions.FruityConstantInteger;
 import parselang.intermediate.fruity.expressions.FruityConstantString;
-import parselang.intermediate.fruity.expressions.FruityPush;
 import parselang.intermediate.fruity.parameters.FruityParameter;
-import parselang.intermediate.fruity.sentences.*;
+import parselang.intermediate.fruity.sentences.FruityAssignment;
+import parselang.intermediate.fruity.sentences.FruityPrint;
+import parselang.intermediate.fruity.sentences.FruityReturn;
 import parselang.parser.ParseRuleStorage;
 import parselang.parser.data.NonTerminal;
 import parselang.parser.data.ParseRule;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static parselang.parser.ParseRuleStorage.*;

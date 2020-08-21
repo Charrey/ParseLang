@@ -1,11 +1,11 @@
 package parselang.intermediate;
 
-import javafx.util.Pair;
 import parselang.intermediate.dataholders.*;
 import parselang.parser.ParseRuleStorage;
 import parselang.parser.data.*;
 import parselang.util.Analytics;
 import parselang.util.DeclarationTree;
+import parselang.util.Pair;
 
 import java.util.List;
 import java.util.stream.Collectors;
