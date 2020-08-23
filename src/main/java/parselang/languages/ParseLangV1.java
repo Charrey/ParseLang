@@ -102,6 +102,7 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("SafeSpecial").addRhs(term("/")));
         rules.add(new ParseRule("SafeSpecial").addRhs(term("-")));
         rules.add(new ParseRule("SafeSpecial").addRhs(term("!")));
+        rules.add(new ParseRule("SafeSpecial").addRhs(term(",")));
         rules.add(new ParseRule("SafeSpecial").addRhs(term("\"")));
 
         rules.add(new ParseRule("SafeChar").addRhs(nonTerm("UpperOrLowerCase")));
@@ -129,41 +130,56 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("Comparator").addRhs(term("<")));
         rules.add(new ParseRule("Comparator").addRhs(term(">")));
 
-        //rules.add(new ParseRule("Sentence").addRhs(nonTerm("Expression")));
-        //rules.add(new ParseRule("Sentence").addRhs(term("return"), ws(), nonTerm("Expression")));
-        rules.add(new ParseRule("DelimitedSentence").addRhs(term("print"), ws(), bound(nonTerm("Expression"), "e", false)));
-        rules.add(new ParseRule("DelimitedSentence").addRhs(term("exec"), ws(), bound(nonTerm("Expression"), "e", false)));
         rules.add(new ParseRule("DelimitedSentence").addRhs(bound(nonTerm("Expression"), "e", false)));
 
-        rules.add(new ParseRule("Sentence").addRhs(term("try"), ws(), bound(nonTerm("BlockStat"), "try", false), ws(), term("catch"), ws(), bound(nonTerm("Expression"), "exp", false), ws(), bound(nonTerm("BlockStat"), "catch", false)));
         rules.add(new ParseRule("BlockStat").addRhs(term("{"), ws(), bound(star(nonTerm("Sentence"), ws()), "e", true), ws(), term("}")));
 
-        rules.add(new ParseRule("DelimitedSentence").addRhs(term("throw"), ws(), bound(nonTerm("Expression"), "e", false)));
-
+        rules.add(new ParseRule("OptionalMinus").addRhs(term("-")));
+        rules.add(new ParseRule("OptionalMinus"));
 
         rules.add(new ParseRule("NumberLiteral").addRhs(term("0")));
-        rules.add(new ParseRule("NumberLiteral").addRhs(bound(nonTerm("NonZeroNumber"), "e", false), bound(star(nonTerm("Number")), "e2", false), nonTerm("OptionalDecimalPlaces")));
+        rules.add(new ParseRule("NumberLiteral").addRhs(nonTerm("OptionalMinus"), bound(nonTerm("NonZeroNumber"), "e", false), bound(star(nonTerm("Number")), "e2", false), nonTerm("OptionalDecimalPlaces")));
         rules.add(new ParseRule("OptionalDecimalPlaces").addRhs(term("."), bound(star(nonTerm("Number")), "e", false)));
         rules.add(new ParseRule("OptionalDecimalPlaces"));
 
         rules.add(new ParseRule("BooleanLiteral").addRhs(term("true")));
         rules.add(new ParseRule("BooleanLiteral").addRhs(term("false")));
 
+        rules.add(new ParseRule("PlusOrMinus").addRhs(term("+")));
+        rules.add(new ParseRule("PlusOrMinus").addRhs(term("-")));
+
         rules.add(new ParseRule("Expression").addRhs(bound(nonTerm("ComparitiveExpression"), "e", false)));
         rules.add(new ParseRule("ComparitiveExpression").addRhs(bound(nonTerm("AdditiveExpression"), "e", false), bound(star(nonTerm("Comparator"), ws(), nonTerm("AdditiveExpression")), "e2", false), ws()));
-        rules.add(new ParseRule("AdditiveExpression").addRhs(bound(nonTerm("MultiplicativeExpression"), "e", false), bound(star(term("+"), ws(), nonTerm("MultiplicativeExpression")), "e2", false), ws()));
+        rules.add(new ParseRule("AdditiveExpression").addRhs(bound(nonTerm("MultiplicativeExpression"), "e", false), bound(star(nonTerm("PlusOrMinus"), ws(), nonTerm("MultiplicativeExpression")), "e2", false), ws()));
         rules.add(new ParseRule("MultiplicativeExpression").addRhs(bound(nonTerm("SimpleExpression"), "e", false),   bound(star(term("*"), ws(), nonTerm("SimpleExpression")), "e2", false), ws()));
         rules.add(new ParseRule("SimpleExpression").addRhs(term("("), ws(), bound(nonTerm("Expression"), "e", false), ws(), term(")")));
         rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("NumberLiteral"), "e", false), ws()));
         rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("StringLiteral"), "e", false), ws()));
         rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("BooleanLiteral"), "e", false), ws()));
         rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("ParameterName"), "e", false), ws()));
+        rules.add(new ParseRule("SimpleExpression").addRhs(term("~concat"), ws(), term("("), ws(), bound(nonTerm("Expression"), "e", false), ws(), term(")"), ws()));
+        rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("Data"), "e", false), ws()));
+        rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("ListLiteral"), "e", false), ws()));
+
+        rules.add(new ParseRule("ListLiteral").addRhs(term("["), ws(), term("]"), ws()));
+        rules.add(new ParseRule("ListLiteral").addRhs(
+                term("["),
+                ws(),
+                bound(nonTerm("Expression"), "e", false),
+                ws(),
+                bound(star(term(","), ws(), nonTerm("Expression"), ws()), "e2", false),
+                term("]")));
+
 
         rules.add(new ParseRule("OptionalExpression").addRhs(bound(nonTerm("Expression"), "e", false)));
 
+        rules.add(new ParseRule("Data").addRhs(nonTerm("RegisteredNonTerminal"), term("["), bound(nonTerm("Expression"), "e", false), term("]"), ws(), nonTerm("OptionalAssignment")));
+        rules.add(new ParseRule("OptionalAssignment").addRhs(term("="), ws(), bound(nonTerm("Expression"), "e", false)));
+        rules.add(new ParseRule("OptionalAssignment"));
+
         rules.add(new ParseRule("Sentence").addRhs(nonTerm("DelimitedSentence"), ws(), term(";")));
+        rules.add(new ParseRule("DeclarationContent").addRhs(bound(nonTerm("Sentence"), "e", true), ws(), bound(star(nonTerm("Sentence"), ws()), "e2", true)));
         rules.add(new ParseRule("DeclarationContent").addRhs(bound(nonTerm("DelimitedSentence"), "e", true), ws()));
-        rules.add(new ParseRule("DeclarationContent").addRhs(bound(star(nonTerm("Sentence"), ws()), "e", true)));
 
         rules.add(new ParseRule("Declaration").addRhs(
                 nonTerm("NonTerminal"),

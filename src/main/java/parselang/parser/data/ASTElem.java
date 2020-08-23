@@ -6,7 +6,7 @@ public abstract class ASTElem implements ParameterValue {
 
     protected abstract String pp(int indent);
 
-    abstract String parseString();
+    public abstract String parseString();
 
 
 

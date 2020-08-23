@@ -26,7 +26,7 @@ public class ASTElemList extends ASTElem implements Iterable<ASTElem> {
     }
 
     @Override
-    String parseString() {
+    public String parseString() {
         StringBuilder sb = new StringBuilder();
         for (ASTElem child : nodeList) {
             sb.append(child.parseString());

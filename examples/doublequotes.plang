@@ -1,0 +1,19 @@
+NewSafeSpecial < Nothing =  '}' {'}'}
+NewSafeSpecial < Nothing =  '{' {'{'}
+NewSafeSpecial < Nothing =  '(' {'('}
+NewSafeSpecial < Nothing =  ')' {')'}
+NewSafeSpecial < Nothing =  ';' {';'}
+NewSafeSpecial < Nothing =  '+' {'+'}
+NewSafeSpecial < Nothing =  '*' {'*'}
+NewSafeSpecial < Nothing =  '/' {'/'}
+NewSafeSpecial < Nothing =  '-' {'-'}
+NewSafeSpecial < Nothing =  '!' {'!'}
+NewSafeChar < Nothing = UpperOrLowerCase a {a}
+NewSafeChar < Nothing = Number a {a}
+NewSafeChar < Nothing = NewSafeSpecial a {a}
+
+NewStringLiteral < SimpleExpression = '"' NewSafeChar* a '"' {
+    ~concat(a)
+}
+
+"hello!"

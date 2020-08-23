@@ -1,0 +1,7 @@
+
+
+GCD < SimpleExpression = 'gcd' WhiteSpace* '(' WhiteSpace* Expression a WhiteSpace* ',' WhiteSpace* Expression b WhiteSpace* ')' {
+    'cantyet'
+}
+
+gcd(3, 6)

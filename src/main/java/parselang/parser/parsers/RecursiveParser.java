@@ -11,6 +11,7 @@ import parselang.util.Pair;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.LinkedHashSet;
 
 import static parselang.parser.ParseRuleStorage.nonTerm;
 import static parselang.parser.ParseRuleStorage.term;
@@ -21,7 +22,6 @@ public class RecursiveParser extends Parser{
     private final TreeFixer treeFixer = new TreeFixer();
 
     private final MaxSizeDoubleMap<Integer, Node, ParseResult> memo           = new MaxSizeDoubleMap<>(1000);
-    private final MaxSizeDoubleMap<Integer, ParseRule, Integer> recursionDepth     = new MaxSizeDoubleMap<>(-1);
 
     @Override
     public synchronized ParseResult parse(String originalString, Node toParseTo, ParseRuleStorage storage, NonTerminal toplevel) throws ParseErrorException {
@@ -37,6 +37,7 @@ public class RecursiveParser extends Parser{
             return res;
         } catch (ParseErrorException e) {
             stop();
+            e.printStackTrace();
             throw new ParseErrorException(originalString, farthestParse);
         }
     }
@@ -49,17 +50,21 @@ public class RecursiveParser extends Parser{
             throw new ParseErrorException();
         }
         if (verbosity >= 1) {
-            System.out.println(originalString.substring(notYetParsed).replace("\n", "").replace("\r", "") + "                                      " + toParseTo);
+            System.out.println(toParseTo + " ".repeat(100 - toParseTo.toString().length()) + originalString.substring(notYetParsed).replace("\n", "").replace("\r", ""));
         }
         if (toParseTo instanceof NonTerminal) {
             NonTerminal toParseToNT = (NonTerminal) toParseTo;
-             for (ParseRule ruleToTry : storage.getByNonTerminal(toParseToNT, notYetParsed == originalString.length() ? null : originalString.charAt(notYetParsed))) {
+            storage.registerNonTerminal(toParseToNT, toplevel);
+            LinkedHashSet<ParseRule> rulesToTry = storage.getByNonTerminal(toParseToNT, notYetParsed == originalString.length() ? null : originalString.charAt(notYetParsed));
+             for (ParseRule ruleToTry : rulesToTry) {
                 try {
                     ParseResult res =  parseWithRule(originalString, notYetParsed, ruleToTry, storage, toplevel);
                     if (toParseTo.equals(nonTerm("Declaration"))) {
                         updateGrammar(originalString, res.getTree(), storage, toplevel);
                     } else if (toParseTo.equals(nonTerm("Variable"))) {
                         addParameter(originalString, res.getTree(), storage, toplevel);
+                    } else if (toParseTo.equals(nonTerm("NonTerminal"))) {
+                        addNonTerminalName(originalString, res.getTree(), storage, toplevel);
                     }
                     memo.add(notYetParsed, toParseTo, res);
                     return res;
@@ -74,6 +79,8 @@ public class RecursiveParser extends Parser{
         }
     }
 
+
+
     private void addParameter(String originalString, AST tree, ParseRuleStorage storage, NonTerminal toplevel) {
         boolean lazy = ((AST)tree.getLastChild()).getChildren().size() == 1;
         ParseRule ruleToAdd;
@@ -85,12 +92,15 @@ public class RecursiveParser extends Parser{
         storage.addTemporary(ruleToAdd, toplevel);
     }
 
+    private void addNonTerminalName(String originalString, AST tree, ParseRuleStorage storage, NonTerminal toplevel) {
+        storage.registerNonTerminal(new NonTerminal(tree.subString(originalString)), toplevel);
+    }
+
     private void updateGrammar(String originalString, AST declaration, ParseRuleStorage storage, NonTerminal toplevel) {
         DeclarationTree declTree = new DeclarationTree(originalString, declaration);
         ParseRule inheritanceRule = new ParseRule(declTree.superNonTerminal).addRhs(nonTerm(declTree.name));
         ParseRule ruleToAdd2 = new ParseRule(declTree.name).addRhs(declTree.retrievedNodes.toArray(new Node[0]));
         storage.addCustomRules(declaration, new Pair<>(inheritanceRule, declTree.direction), new Pair<>(ruleToAdd2, Direction.RIGHT), toplevel);
-        storage.purgeTemporary("Parameter", toplevel);
     }
 
 
@@ -123,29 +133,20 @@ public class RecursiveParser extends Parser{
     }
 
     private ParseResult parseWithRule(String originalString, int notYetParsed, ParseRule ruleToTry, ParseRuleStorage storage, NonTerminal toplevel) throws ParseErrorException {
-        if (recursionDepth.contains(notYetParsed, ruleToTry)) {
-            throw new UnsupportedOperationException("yaay");
-        }
-        recursionDepth.computeIfAbsent(notYetParsed, ruleToTry, a -> 0);
-        recursionDepth.update(notYetParsed, ruleToTry, integer -> integer + 1);
         //System.out.println(recursionDepth.get(notYetParsed, ruleToTry));
         int newlyParsed = notYetParsed;
         AST ast = new AST(ruleToTry.getLHS(), storage);
         Deque<Node> toTry = new ArrayDeque<>(ruleToTry.getRHS());
-        try {
-            while (!toTry.isEmpty()) {
-                Node node = toTry.pop();
-                if (node instanceof NonTerminal || node instanceof Terminal) {
-                    ParseResult subResult = parse(originalString, newlyParsed, node, storage, toplevel);
-                    newlyParsed = subResult.getRemainingIndex();
-                    ast.addChild(subResult.getTree());
-                } else if (node instanceof BoundNonTerminal) {
-                    toTry.push(((BoundNonTerminal) node).getContent());
-                    //throw new UnsupportedOperationException();
-                }
+        while (!toTry.isEmpty()) {
+            Node node = toTry.pop();
+            if (node instanceof NonTerminal || node instanceof Terminal) {
+                ParseResult subResult = parse(originalString, newlyParsed, node, storage, toplevel);
+                newlyParsed = subResult.getRemainingIndex();
+                ast.addChild(subResult.getTree());
+            } else if (node instanceof BoundNonTerminal) {
+                toTry.push(((BoundNonTerminal) node).getContent());
+                //throw new UnsupportedOperationException();
             }
-        } finally {
-            recursionDepth.update(notYetParsed, ruleToTry, integer -> integer - 1);
         }
         ast.setParsed(originalString, notYetParsed, newlyParsed);
         ParseResult res = new ParseResult(originalString, newlyParsed, ast, ruleToTry);

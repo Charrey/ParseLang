@@ -1,0 +1,9 @@
+
+
+GCD < SimpleExpression = 'Foo' Expression a 'Fa' Expression b {
+    GCD['a'] = a;
+    GCD['b'] = b;
+    GCD['b'];
+}
+
+Foo3Fa5

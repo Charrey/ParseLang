@@ -25,15 +25,6 @@ public class ParseRuleStorage {
     public final FollowCalculator followCalc = new NaiveFollowCalculator();
     public final FirstPlusCalculator firstPlusCalc = new NaiveFirstPlusCalculator();
 
-    private Map<AST, Pair<ParseRule, ParseRule>> addedRulesHistory = new HashMap<>(); //(inheritedrule, actualrule)
-    private BiMap<ParseRule, Integer> rulesByID = new HashBiMap<>(); //index = ruleID;
-    private int idCounter = 0;
-    private int lastIdOfLib = -1;
-
-    public boolean isAddedRule(int id) {
-        return id > lastIdOfLib;
-    }
-
 
     public void prepare(Language lang, NonTerminal toplevel) throws UndefinedNontermException {
         addedRules = new HashSet<>();
@@ -46,9 +37,6 @@ public class ParseRuleStorage {
     public void addCustomRules(AST source, Pair<ParseRule, Direction> inheritedRule, Pair<ParseRule, Direction> addedRule, NonTerminal toplevel) {
         addedRules.add(inheritedRule);
         addedRules.add(addedRule);
-        addedRulesHistory.put(source, new Pair<>(inheritedRule.getKey(), addedRule.getKey()));
-        rulesByID.put(addedRule.getKey(), idCounter++);
-        rulesByID.put(inheritedRule.getKey(), idCounter++);
         addRule(inheritedRule.getKey(), inheritedRule.getValue());
         addRule(addedRule.getKey(), addedRule.getValue());
         try {
@@ -144,9 +132,7 @@ public class ParseRuleStorage {
         List<ParseRule> originalRules = language.getRules();
         for (ParseRule rule : originalRules) {
             addRule(rule, Direction.RIGHT);
-            rulesByID.put(rule, idCounter++);
         }
-        this.lastIdOfLib = idCounter;
     }
 
 
@@ -207,30 +193,9 @@ public class ParseRuleStorage {
         return addedRules;
     }
 
-    public Set<ParseRule> getAddedRules() {
-        return addedRules.stream().map(Pair::getKey).collect(Collectors.toSet());
-    }
-
-
-    public Pair<ParseRule, ParseRule> getAddedRulesHistory(AST declaration) {
-        return addedRulesHistory.get(declaration);
-    }
-
-    public Integer getIDbyRule(ParseRule key) {
-        return rulesByID.get(key);
-    }
-
-    public ParseRule getRuleByID(Integer id) {
-        return rulesByID.inverse().get(id);
-    }
-
-    public Integer getIDSpace() {
-        return rulesByID.size();
-    }
 
     public void addTemporary(ParseRule ruleToAdd, NonTerminal toplevel) {
         addedRules.add(new Pair<>(ruleToAdd, Direction.RIGHT));
-        rulesByID.put(ruleToAdd, idCounter++);
         addRule(ruleToAdd, Direction.RIGHT);
         try {
             calculateFirst();
@@ -241,13 +206,20 @@ public class ParseRuleStorage {
         calculateFirstPlus();
     }
 
-    public void purgeTemporary(String parameter, NonTerminal toplevel) {
-        try {
-            calculateFirst();
-        } catch (UndefinedNontermException e) {
-            throw new RuntimeException();
+    private Set<NonTerminal> registered = new HashSet<>();
+
+    public void registerNonTerminal(NonTerminal nonTerminal, NonTerminal toplevel) {
+        if (!registered.contains(nonTerminal)) {
+            registered.add(nonTerminal);
+            addRule(new ParseRule("RegisteredNonTerminal").addRhs(term(nonTerminal.getName())), Direction.LEFT);
+            try {
+                calculateFirst();
+            } catch (UndefinedNontermException e) {
+                //This should not happen??
+                throw new RuntimeException();
+            }
+            calculateFollow(toplevel);
+            calculateFirstPlus();
         }
-        calculateFollow(toplevel);
-        calculateFirstPlus();
     }
 }

@@ -78,7 +78,7 @@ public class AST extends ASTElem  {
         return sb.toString();
     }
 
-    protected String parseString() {
+    public String parseString() {
         if (isLeaf()) {
             return ((Terminal)root).getValue();
         } else {

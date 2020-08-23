@@ -1,6 +1,7 @@
 package parselang.interpreter.data;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class PLString extends PLData {
@@ -29,5 +30,19 @@ public class PLString extends PLData {
     @Override
     public String toString() {
         return contents;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PLString plString = (PLString) o;
+        return contents.equals(plString.contents);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(contents);
     }
 }

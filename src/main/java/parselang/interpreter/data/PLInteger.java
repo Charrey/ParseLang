@@ -1,6 +1,7 @@
 package parselang.interpreter.data;
 
 import java.math.BigInteger;
+import java.util.Objects;
 
 public class PLInteger extends PLData{
 
@@ -25,5 +26,18 @@ public class PLInteger extends PLData{
     @Override
     public String toString() {
         return content.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PLInteger plInteger = (PLInteger) o;
+        return content.equals(plInteger.content);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(content);
     }
 }

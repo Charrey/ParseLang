@@ -14,4 +14,14 @@ public class PLNull extends PLData {
     public String toString() {
         return "->Null!<-";
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj;
+    }
+
+    @Override
+    public int hashCode() {
+        return 0;
+    }
 }

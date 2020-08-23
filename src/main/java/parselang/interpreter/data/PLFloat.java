@@ -1,6 +1,7 @@
 package parselang.interpreter.data;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class PLFloat extends PLData {
 
@@ -29,5 +30,16 @@ public class PLFloat extends PLData {
         return !toReturn.contains(".") ? toReturn + ".0" : toReturn;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PLFloat plFloat = (PLFloat) o;
+        return content.equals(plFloat.content);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(content);
+    }
 }

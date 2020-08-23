@@ -1,14 +1,7 @@
 package parselang.interpreter;
 
 import parselang.interpreter.data.*;
-import parselang.languages.ParseLangV1;
-import parselang.parser.ParseResult;
-import parselang.parser.ParseRuleStorage;
-import parselang.parser.UndefinedNontermException;
 import parselang.parser.data.*;
-import parselang.parser.exceptions.ParseErrorException;
-import parselang.parser.parsers.Parser;
-import parselang.parser.parsers.RecursiveParser;
 import parselang.util.DeclarationTree;
 
 import java.math.BigDecimal;
@@ -47,6 +40,7 @@ public class Interpreter {
 
     private static Map<ParseRule, Function<Map<String, Object>, PLData>> declarations = new HashMap<>();
     private static Map<String, Object> variableAssignments = new HashMap<>();
+    private static Map<NonTerminal, Deque<PLMap>> data = new HashMap<>();
 
     private static void addDeclarationAsFunction(String originalString, AST declaration) {
         DeclarationTree declTree = new DeclarationTree(originalString, declaration);
@@ -65,6 +59,9 @@ public class Interpreter {
     private static Deque<Map<String, ParameterValue>> parameterBindings = new LinkedList<>();
 
     private static PLData runNonTerminal(String originalString, AST result) {
+        data.computeIfAbsent((NonTerminal) result.getRoot(), nonTerminal -> new LinkedList<>());
+        data.get(result.getRoot()).offerFirst(new PLMap());
+        PLData toReturn;
         if (declarations.containsKey(result.getRule().getOrigin())) {
             parameterBindings.offerFirst(new HashMap<>());
             for (int i = 0; i < result.getRule().getRHS().size(); i++) {
@@ -83,45 +80,136 @@ public class Interpreter {
                     }
                 }
             }
-            PLData toReturn = declarations.get(result.getRule().getOrigin()).apply(variableAssignments);
+            toReturn = declarations.get(result.getRule().getOrigin()).apply(variableAssignments);
             parameterBindings.pollFirst();
-            return toReturn;
         } else {
             switch (((NonTerminal) (result.getRoot())).getName()) {
                 case "HighLevel":
-                    return processHighLevel(originalString, result);
+                    toReturn = processHighLevel(originalString, result);
+                    break;
                 case "Expression":
-                    return processExpression(originalString, result);
+                    toReturn =  processExpression(originalString, result);
+                    break;
                 case "ComparitiveExpression":
-                    return processComparitiveExpression(originalString, result);
+                    toReturn =  processComparitiveExpression(originalString, result);
+                    break;
                 case "AdditiveExpression":
-                    return processAdditiveExpression(originalString, result);
+                    toReturn =  processAdditiveExpression(originalString, result);
+                    break;
                 case "MultiplicativeExpression":
-                    return processMultiplicativeExpression(originalString, result);
+                    toReturn =  processMultiplicativeExpression(originalString, result);
+                    break;
                 case "SimpleExpression":
-                    return processSimpleExpression(originalString, result);
+                    toReturn =  processSimpleExpression(originalString, result);
+                    break;
                 case "DeclarationContent":
-                    return processDeclarationContent(originalString, result);
+                    toReturn =  processDeclarationContent(originalString, result);
+                    break;
                 case "DelimitedSentence":
-                    return processDelimitedSentence(originalString, result);
+                    toReturn =  processDelimitedSentence(originalString, result);
+                    break;
+                case "Sentence":
+                    toReturn =  processSentence(originalString, result);
+                    break;
                 case "StringLiteral":
-                    return processStringLiteral(originalString, result);
+                    toReturn =  processStringLiteral(originalString, result);
+                    break;
+                case "ListLiteral":
+                    toReturn =  processListLiteral(originalString, result);
+                    break;
                 case "NumberLiteral":
-                    return processNumberLiteral(originalString, result);
+                    toReturn =  processNumberLiteral(originalString, result);
+                    break;
                 case "OptionalDecimalPlaces":
-                    return processOptionalDecimalPlaces(originalString, result);
+                    toReturn =  processOptionalDecimalPlaces(originalString, result);
+                    break;
+                case "Data":
+                    toReturn = processData(originalString, result);
+                    break;
+                case "OptionalAssignment":
+                    toReturn = processOptionalAssignment(originalString, result);
+                    break;
                 case "NonZeroNumber":
                 case "SafeChar":
                 case "Number":
                 case "UpperOrLowerCase":
+                case "SafeSpecial":
                 case "LowerCase":
-                    return processSimpleRule(originalString, result);
+                case "RegisteredNonTerminal":
+                    toReturn =  processSimpleRule(originalString, result);
+                    break;
                 default:
                     throw new UnsupportedOperationException();
             }
         }
+        data.get(result.getRoot()).pollFirst();
+        if (data.get(result.getRoot()).isEmpty()) {
+            data.remove(result.getRoot());
+        }
+        assert toReturn != null;
+        return toReturn;
     }
 
+    private static PLData processListLiteral(String originalString, AST result) {
+        if (isSimpleRule(result.getRule())) {
+            return run(originalString, (AST) result.getChild(0));
+        }
+        if (result.getRule().getOrigin().equals(new ParseRule("ListLiteral").addRhs(
+                term("["),
+                ws(),
+                bound(nonTerm("Expression"), "e", false),
+                ws(),
+                bound(star(term(","), ws(), nonTerm("Expression"), ws()), "e2", false),
+                term("]")))) {
+            PLList toReturn = new PLList();
+            PLData firstElement = run(originalString, (AST) result.getChild(2));
+            toReturn.add(firstElement);
+            ASTElemList others = (ASTElemList) result.getChild(4);
+            for (ASTElem other : others) {
+                AST expression = (AST) ((ASTElemList) other).get(2);
+                toReturn.add(run(originalString, expression));
+            }
+            return toReturn;
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    private static PLData processSentence(String originalString, AST result) {
+        if (isSimpleRule(result.getRule())) {
+            return run(originalString, (AST) result.getChild(0));
+        }
+        if (result.getRule().getOrigin().equals(new ParseRule("Sentence").addRhs(nonTerm("DelimitedSentence"), ws(), term(";")))) {
+            return run(originalString, (AST) result.getChild(0));
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    private static PLData processOptionalAssignment(String originalString, AST result) {
+        if (result.getChildren().isEmpty()) {
+            return PLNull.get();
+        } else {
+            return run(originalString, (AST) result.getChild(2));
+        }
+    }
+
+    private static PLData processData(String originalString, AST result) {
+        if (isSimpleRule(result.getRule())) {
+            return run(originalString, (AST) result.getChild(0));
+        }
+        if (result.getRule().getOrigin().equals(new ParseRule("Data").addRhs(nonTerm("RegisteredNonTerminal"), term("["), bound(nonTerm("Expression"), "e", false), term("]"), ws(), nonTerm("OptionalAssignment")))) {
+            PLString whichMap = (PLString) run(originalString, (AST) result.getChild(0));
+            PLData optionalAssignment = run(originalString, (AST) result.getChild(5));
+            PLData key = run(originalString, (AST) result.getChild(2));
+            boolean isAssignment = !(optionalAssignment instanceof PLNull);
+            if (isAssignment) {
+                data.get(nonTerm(whichMap.toString())).peekFirst().put(key, optionalAssignment);
+                return optionalAssignment;
+            } else {
+                return data.get(nonTerm(whichMap.toString())).peekFirst().get(key);
+            }
+        }
+        throw new UnsupportedOperationException();
+    }
 
 
     private static PLData processOptionalDecimalPlaces(String originalString, AST result) {
@@ -144,14 +232,19 @@ public class Interpreter {
         if (isSimpleRule(result.getRule())) {
             return run(originalString, (AST) result.getChild(0));
         }
-        if (result.getRule().getOrigin().equals(new ParseRule("NumberLiteral").addRhs(bound(nonTerm("NonZeroNumber"), "e", false), bound(star(nonTerm("Number")), "e2", false), nonTerm("OptionalDecimalPlaces")))) {
-            PLInteger before = new PLInteger((PLString) run(originalString, (AST) result.getChild(0)));
-            ASTElemList additionalDecimals = (ASTElemList) result.getChild(1);
+        if (result.getRule().getOrigin().equals(new ParseRule("NumberLiteral").addRhs(nonTerm("OptionalMinus"), bound(nonTerm("NonZeroNumber"), "e", false), bound(star(nonTerm("Number")), "e2", false), nonTerm("OptionalDecimalPlaces")))) {
+            PLInteger before = new PLInteger((PLString) run(originalString, (AST) result.getChild(1)));
+            AST optionalMinus = (AST) result.getChild(0);
+            if (optionalMinus.getChildren().size() == 1) {
+                before.set(before.get().negate());
+            }
+
+            ASTElemList additionalDecimals = (ASTElemList) result.getChild(2);
             additionalDecimals.forEach(astElem -> {
                 PLInteger toAdd = new PLInteger((PLString) run(originalString, (AST)astElem));
                 before.set(before.get().multiply(new BigInteger("10")).add(toAdd.get()));
             });
-            Object after = run(originalString, (AST) result.getChild(2));
+            Object after = run(originalString, (AST) result.getChild(3));
             if (after instanceof PLNull) {
                 return before;
             } else {
@@ -210,13 +303,28 @@ public class Interpreter {
             if (result.getChild(0) instanceof ASTElemList && ((ASTElemList)result.getChild(0)).size() == 0) {
                 return PLNull.get();
             }
-            return run(originalString, (AST) result.getChild(0));
+            if (result.getChild(0) instanceof AST) {
+                return run(originalString, (AST) result.getChild(0));
+            } else if (result.getChild(0) instanceof ASTElemList) {
+                PLData lastSentenceReturn = null;
+                for (ASTElem astElem : ((ASTElemList) result.getChild(0))) {
+                    lastSentenceReturn = run(originalString, (AST) ((ASTElemList)astElem).get(0));
+                }
+                return lastSentenceReturn;
+            }
         }
-        if (result.getRule().equals(new ParseRule("DeclarationContent").addRhs(bound(nonTerm("DelimitedSentence"), "e", true), nonTerm("(WhiteSpace*)")))) {
+        if (result.getRule().getOrigin().equals(new ParseRule("DeclarationContent").addRhs(bound(nonTerm("DelimitedSentence"), "e", true), ws()))) {
             return run(originalString, (AST) result.getChild(0));
-        } else {
-            throw new UnsupportedOperationException();
+        } else if (result.getRule().getOrigin().equals(new ParseRule("DeclarationContent").addRhs(bound(nonTerm("Sentence"), "e", true), ws(), bound(star(nonTerm("Sentence"), ws()), "e2", true)))) {
+            AST firstSentence = (AST) result.getChild(0);
+            PLData output = run(originalString, firstSentence);
+            ASTElemList otherSentences = (ASTElemList) result.getChild(2);
+            for (ASTElem otherSentence : otherSentences) {
+                output = run(originalString, (AST)((ASTElemList)otherSentence).get(0));
+            }
+            return output;
         }
+        throw new UnsupportedOperationException();
     }
 
     private static PLData processSimpleExpression(String originalString, AST result) {
@@ -238,8 +346,22 @@ public class Interpreter {
                return runList(originalString, (ASTElemList) value);
             } else if (value instanceof AST) {
                 return run(originalString, (AST) value);
+            } else {
+                throw new UnsupportedOperationException();
             }
-            throw new UnsupportedOperationException();
+        } else if (result.getRule().getOrigin().equals(new ParseRule("SimpleExpression").addRhs(term("~concat"), ws(), term("("), ws(), bound(nonTerm("Expression"), "e", false), ws(), term(")"), ws()))) {
+            PLData expression = run(originalString, (AST) result.getChild(4));
+            if (expression instanceof PLList) {
+                List<PLString> toConcat = new LinkedList<>();
+                ((PLList)expression).forEach(plData -> toConcat.add(new PLString(plData)));
+                return new PLString(toConcat);
+            } else {
+                return new PLString(expression);
+            }
+        } else if (result.getRule().getOrigin().equals(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("Data"), "e", false), ws()))) {
+            return run(originalString, (AST) result.getChild(0));
+        } else if (result.getRule().getOrigin().equals(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("ListLiteral"), "e", false), ws()))) {
+            return run(originalString, (AST) result.getChild(0));
         }
         throw new UnsupportedOperationException();
     }
@@ -294,20 +416,21 @@ public class Interpreter {
         if (isSimpleRule(result.getRule())) {
             return run(originalString, (AST) result.getChild(0));
         }
-        if (result.getRule().equals(new ParseRule("AdditiveExpression").addRhs(bound(nonTerm("MultiplicativeExpression"), "e", false),
-                bound(
-                        nonTerm("((+ WhiteSpace* MultiplicativeExpression)*)"),
-                        "e2", false
-                ), nonTerm("(WhiteSpace*)")))) {
+        if (result.getRule().getOrigin().equals(new ParseRule("AdditiveExpression").addRhs(bound(nonTerm("MultiplicativeExpression"), "e", false), bound(star(nonTerm("PlusOrMinus"), ws(), nonTerm("MultiplicativeExpression")), "e2", false), ws()))) {
             PLData base = run(originalString, (AST) result.getChild(0));
             if (((ASTElemList)result.getChild(1)).size() == 0) {
                 return base;
             } else {
                 final int[] type = {base instanceof PLFloat ? 1 : (base instanceof PLString ? 2 : 0)}; //int=0, float=1, string=2
+                List<Boolean> addition = new LinkedList<>();
                 List<PLData> rest = new LinkedList<>();
+                final boolean[] containsMinus = {false};
                 ASTElemList terms = (ASTElemList) result.getChild(1);
                 terms.forEach(astElem -> {
                     PLData get = run(originalString, (AST) ((ASTElemList)astElem).get(2));
+                    boolean isAddition = ((ASTElemList)astElem).get(0).parseString().equals("+");
+                    addition.add(isAddition);
+                    containsMinus[0] = containsMinus[0] || !isAddition;
                     rest.add(get);
                     if (get instanceof PLFloat && type[0] < 1) {
                         type[0] = 1;
@@ -317,19 +440,33 @@ public class Interpreter {
                 });
                 if (type[0] == 1) {
                     PLFloat baseFloat = base instanceof PLFloat ? (PLFloat) base : new PLFloat((PLInteger) base);
-                    rest.forEach(other -> {
-                        PLFloat otherFloat = other instanceof  PLFloat ? (PLFloat) other : new PLFloat((PLInteger) other);
-                        baseFloat.set(baseFloat.get().add(otherFloat.get()));
-                    });
+                    for (int i = 0; i < rest.size(); i++) {
+                        PLFloat otherFloat = rest.get(i) instanceof  PLFloat ? (PLFloat) rest.get(i) : new PLFloat((PLInteger) rest.get(i));
+                        if (addition.get(i)) {
+                            baseFloat.set(baseFloat.get().add(otherFloat.get()));
+                        } else {
+                            baseFloat.set(baseFloat.get().subtract(otherFloat.get()));
+                        }
+                    }
                     return baseFloat;
                 } else if (type[0] == 0) {
                     PLInteger baseInt = (PLInteger) base;
+                    for (int i = 0; i < rest.size(); i++) {
+                        PLInteger otherInt = (PLInteger) rest.get(i);
+                        if (addition.get(i)) {
+                            baseInt.set(baseInt.get().add(otherInt.get()));
+                        } else {
+                            baseInt.set(baseInt.get().subtract(otherInt.get()));
+                        }
+                    }
                     rest.forEach(other -> {
-                        PLInteger otherInt = (PLInteger) other;
-                        baseInt.set(baseInt.get().add(otherInt.get()));
+
                     });
                     return baseInt;
                 } else {
+                    if (containsMinus[0]) {
+                        throw new IllegalArgumentException("Cannot use a String in subtraction");
+                    }
                     List<PLString> asStrings = new LinkedList<>();
                     asStrings.add(new PLString(base));
                     rest.forEach(other -> asStrings.add(new PLString(other)));
