@@ -1,0 +1,5 @@
+Foo < SimpleExpression = ('much' WhiteSpace)* muches 'bigger than ' Expression myVariable {
+ muches
+}
+
+much much much much bigger than 6

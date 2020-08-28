@@ -1,7 +1,7 @@
-
-
 GCD < SimpleExpression = 'gcd' WhiteSpace* '(' WhiteSpace* Expression a WhiteSpace* ',' WhiteSpace* Expression b WhiteSpace* ')' {
-    'cantyet'
+    ~if(b==0, a, gcd(b, a % b))
 }
 
-gcd(3, 6)
+
+
+gcd(88, 99)

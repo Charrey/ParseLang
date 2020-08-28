@@ -1,9 +1,52 @@
 
 
-GCD < SimpleExpression = 'Foo' Expression a 'Fa' Expression b {
-    GCD['a'] = a;
-    GCD['b'] = b;
-    GCD['b'];
+VariableName > SimpleExpression = UpperOrLowerCase first UpperOrLowerCaseOrNumber* other {
+    outside['variables'][~concat([first, ~concat(other)])];
 }
 
-Foo3Fa5
+StringDecl < DelimitedSentence = 'String ' UpperOrLowerCase first UpperOrLowerCaseOrNumber* other WhiteSpace* '=' WhiteSpace* Expression value {
+    outside['variables'] = ~map;
+    outside['variables'][~concat([first, ~concat(other)])] = value;
+}
+
+IntDecl < DelimitedSentence = 'int ' UpperOrLowerCase first UpperOrLowerCaseOrNumber* other  WhiteSpace* '=' WhiteSpace* Expression value {
+    outside['variables'] = ~map;
+    outside['variables'][~concat([first, ~concat(other)])] = value;
+}
+
+VariableAssignment < DelimitedSentence = VariableName varname' WhiteSpace* '=' WhiteSpace* Expression value {
+    outside['variables'] = ~map;
+    inside['variables'] = outside['variables'];
+    outside['variables'][varname] = value;
+}
+
+Forloop < DelimitedSentence = 'for'                      WhiteSpace*
+                              '('                        WhiteSpace*
+                              'int'                      WhiteSpace*
+                              VariableName               WhiteSpace*
+                              '='                        WhiteSpace*
+                              Expression iteratorInit    WhiteSpace*
+                              ';'                        WhiteSpace*
+                              Expression condition'      WhiteSpace*
+                              ';'                        WhiteSpace*
+                              VariableName               WhiteSpace*
+                              '='                        WhiteSpace*
+                              Expression                 WhiteSpace*
+                              ')'                        WhiteSpace*
+                              '{'                        WhiteSpace*
+                              Sentence sentence'          WhiteSpace*
+                              '}'                        WhiteSpace* {
+    inside['variables'] = outside['variables'];
+    sentence;
+    outside['variables'] = inside['variables'];
+}
+
+FooExp < SimpleExpression = 'foo' Number b Number a {
+    String result = 'g';
+    for (int i = 0; i < b; i = i + 1) {
+        result = result + a;
+    };
+    result;
+}
+
+foo67
