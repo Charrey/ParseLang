@@ -12,11 +12,4 @@ public class FileReader {
         return new String(Files.readAllBytes(Paths.get(fileName)));
     }
 
-    public String readStringFromFile(URL url) throws IOException {
-        return new String(Files.readAllBytes(Paths.get(url.getPath())));
-    }
-
-    public String readRootFile(Path rootPath) throws IOException {
-        return new String(Files.readAllBytes(rootPath.resolve("highlevel.plang")));
-    }
 }

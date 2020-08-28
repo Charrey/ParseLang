@@ -9,7 +9,7 @@ import java.util.stream.LongStream;
 
 public abstract class TimedClass {
 
-    private Set<Long> measurements = new HashSet<>();
+    private final Set<Long> measurements = new HashSet<>();
     private long startTime;
 
     protected void start() {

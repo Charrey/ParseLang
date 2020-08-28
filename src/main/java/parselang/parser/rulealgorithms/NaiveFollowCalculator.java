@@ -6,7 +6,7 @@ import java.util.*;
 
 public class NaiveFollowCalculator extends FollowCalculator {
     @Override
-    public void updateFollow(Map<Node, Set<Character>> follow, Node startSymbol, Map<Node, Set<Character>> first, Map<NonTerminal, List<ParseRule>> rules, Collection<Terminal> terminals, Collection<NonTerminal> nonTerminals) {
+    public void updateFollow(Map<Node, Set<Character>> follow, Node startSymbol, Map<Node, Set<Character>> first, Map<NonTerminal, List<ParseRule>> rules, Collection<NonTerminal> nonTerminals) {
         start();
         for (NonTerminal nt : nonTerminals) {
             follow.put(nt, new HashSet<>());

@@ -40,7 +40,4 @@ public class ParseErrorException extends Exception {
         }
     }
 
-    public int getIndex() {
-        return index;
-    }
 }

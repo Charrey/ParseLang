@@ -25,10 +25,6 @@ public class ParseRule {
         return lhs;
     }
 
-    public void setRhs(List<Node> rhs) {
-        this.rhs = rhs;
-    }
-
     public ParseRule addRhs(Node node) {
         rhs.add(node);
         return this;
@@ -132,19 +128,4 @@ public class ParseRule {
         return rhs.equals(((ParseRule) other).rhs);
     }
 
-    public boolean hasRHS() {
-        return !rhs.isEmpty();
-    }
-
-    public Node lastRHS() {
-        return rhs.get(rhs.size() - 1);
-    }
-
-    public List<Node> drop() {
-        List<Node> res = new LinkedList<>();
-        for (int i = 0; i < rhs.size() -1; i++) {
-            res.add(rhs.get(i));
-        }
-        return res;
-    }
 }

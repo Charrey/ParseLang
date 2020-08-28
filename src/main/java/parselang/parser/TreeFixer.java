@@ -24,13 +24,12 @@ public class TreeFixer {
                             listToAdd.add(fix(child));
                         }
                         childsList.prepend(listToAdd);
-                        return childsList;
                     } else { //equal to 2
                         for (ASTElem child : treeAST.getChildren().subList(0, treeAST.getChildren().size()-1)) {
                             childsList.prepend(fix(child));
                         }
-                        return childsList;
                     }
+                    return childsList;
                 }
             }
             return treeAST;

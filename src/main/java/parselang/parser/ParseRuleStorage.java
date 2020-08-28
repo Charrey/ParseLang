@@ -1,14 +1,13 @@
 package parselang.parser;
 
 
-import parselang.util.collections.HashBiMap;
 import parselang.languages.Language;
 import parselang.parser.data.*;
 import parselang.parser.rulealgorithms.*;
 import parselang.util.Pair;
-import parselang.util.collections.BiMap;
 
 import java.util.*;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 public class ParseRuleStorage {
@@ -18,7 +17,7 @@ public class ParseRuleStorage {
     private final Map<NonTerminal, List<ParseRule>> rules = new HashMap<>();
     private final Map<Node, Set<Character>> first = new HashMap<>();
     private final Map<Node, Set<Character>> follow = new HashMap<>();
-    private final Map<NonTerminal, Map<Character, LinkedHashSet<ParseRule>>> rulesPlus = new HashMap<>();
+    private final Map<NonTerminal, Map<Character, TreeSet<ParseRule>>> rulesPlus = new HashMap<>();
     private final Set<NonTerminal> allNonterminals = new HashSet<>();
 
     public final FirstCalculator firstCalc = new NaiveFirstCalculator();
@@ -34,7 +33,7 @@ public class ParseRuleStorage {
         calculateFirstPlus();
     }
 
-    public void addCustomRules(AST source, Pair<ParseRule, Direction> inheritedRule, Pair<ParseRule, Direction> addedRule, NonTerminal toplevel) {
+    public void addCustomRules(Pair<ParseRule, Direction> inheritedRule, Pair<ParseRule, Direction> addedRule, NonTerminal toplevel) {
         addedRules.add(inheritedRule);
         addedRules.add(addedRule);
         addRule(inheritedRule.getKey(), inheritedRule.getValue());
@@ -49,10 +48,9 @@ public class ParseRuleStorage {
         calculateFirstPlus();
     }
 
-    private List<ParseRule> addRule(ParseRule rule, Direction dir) {
+    private void addRule(ParseRule rule, Direction dir) {
         List<ParseRule> rules = rule.convertStarNodes();
         addRules(rules, dir);
-        return rules;
     }
 
     private void addMissingNonterminals(Collection<Node> nodes) {
@@ -85,18 +83,18 @@ public class ParseRuleStorage {
     }
 
 
-    public LinkedHashSet<ParseRule> getByNonTerminal(Node nonTerminal, Character startsWith) {
+    public Collection<ParseRule> getByNonTerminal(Node nonTerminal, Character startsWith) {
         if (!(nonTerminal instanceof NonTerminal)) {
-            return new LinkedHashSet<>();
+            return Collections.emptyList();
         }
         if (rulesPlus.containsKey(nonTerminal)) {
             if (rulesPlus.get(nonTerminal).containsKey(startsWith)) {
                 return rulesPlus.get(nonTerminal).get(startsWith);
             }
-            return rulesPlus.get(nonTerminal).getOrDefault(null, new LinkedHashSet<>());
+            return rulesPlus.get(nonTerminal).getOrDefault(null, new TreeSet<>(Comparator.comparingInt(value -> rules.get(nonTerminal).indexOf(value))));
         } else {
             System.out.println("Warning! No such rule! => " + ((NonTerminal)nonTerminal).getName() + ", starts with: \"" + startsWith + "\"");
-            return new LinkedHashSet<>();
+            return Collections.emptyList();
         }
     }
 
@@ -106,10 +104,6 @@ public class ParseRuleStorage {
 
     public static NonTerminal nonTerm(String name) {
         return new NonTerminal(name);
-    }
-
-    public static NonTerminal nonTerm(String name, NonTerminal.SpecialStatus status) {
-        return new NonTerminal(name, status);
     }
 
     public static Terminal term(String name) {
@@ -182,11 +176,11 @@ public class ParseRuleStorage {
     }
 
     private void calculateFirstPlus() {
-        firstPlusCalc.computeFirstPlus(rulesPlus, rules, first, follow, getAllTerminals(), getAllNonTerminals());
+        firstPlusCalc.computeFirstPlus(rulesPlus, rules, first, follow, getAllNonTerminals());
     }
 
     private void calculateFollow(NonTerminal startSymbol) {
-        followCalc.updateFollow(follow, startSymbol, first, rules, getAllTerminals(), getAllNonTerminals());
+        followCalc.updateFollow(follow, startSymbol, first, rules, getAllNonTerminals());
     }
 
     public Set<Pair<ParseRule, Direction>> getAddedRulesDirections() {
@@ -206,7 +200,7 @@ public class ParseRuleStorage {
         calculateFirstPlus();
     }
 
-    private Set<NonTerminal> registered = new HashSet<>();
+    private final Set<NonTerminal> registered = new HashSet<>();
 
     public void registerNonTerminal(NonTerminal nonTerminal, NonTerminal toplevel) {
         if (!registered.contains(nonTerminal)) {

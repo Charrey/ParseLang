@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 
 public class PLString extends PLData {
 
-    String contents;
+    final String contents;
 
     public PLString(String contents) {
         this.contents = contents;
@@ -44,5 +44,10 @@ public class PLString extends PLData {
     @Override
     public int hashCode() {
         return Objects.hash(contents);
+    }
+
+    @Override
+    public String classString() {
+        return "string";
     }
 }

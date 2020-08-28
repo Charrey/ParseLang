@@ -9,7 +9,7 @@ import java.util.function.Function;
 public class NaiveFirstCalculator extends FirstCalculator {
 
     @Override
-    public void updateFirst(Map<Node, Set<Character>> first, Map<NonTerminal, List<ParseRule>> rules, Collection<Terminal> terminals, Collection<NonTerminal> nonTerminals) throws UndefinedNontermException {
+    public void updateFirst(Map<Node, Set<Character>> first, Map<NonTerminal, List<ParseRule>> rules, Collection<Terminal> terminals, Collection<NonTerminal> nonTerminals) {
         start();
         for (Terminal term : terminals) {
             first.computeIfAbsent(term, node -> Collections.singleton(term.getValue().charAt(0)));

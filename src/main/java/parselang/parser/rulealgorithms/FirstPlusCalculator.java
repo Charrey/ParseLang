@@ -11,6 +11,6 @@ import java.util.*;
 
 public abstract class FirstPlusCalculator extends TimedClass {
 
-    public abstract void computeFirstPlus(Map<NonTerminal, Map<Character, LinkedHashSet<ParseRule>>> init, Map<NonTerminal, List<ParseRule>> rules, Map<Node, Set<Character>> first, Map<Node, Set<Character>> follow, Collection<Terminal> terminals, Collection<NonTerminal> nonTerminals);
+    public abstract void computeFirstPlus(Map<NonTerminal, Map<Character, TreeSet<ParseRule>>> init, Map<NonTerminal, List<ParseRule>> rules, Map<Node, Set<Character>> first, Map<Node, Set<Character>> follow, Collection<NonTerminal> nonTerminals);
 
 }

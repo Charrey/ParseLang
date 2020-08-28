@@ -42,4 +42,9 @@ public class PLFloat extends PLData {
     public int hashCode() {
         return Objects.hash(content);
     }
+
+    @Override
+    public String classString() {
+        return "float";
+    }
 }

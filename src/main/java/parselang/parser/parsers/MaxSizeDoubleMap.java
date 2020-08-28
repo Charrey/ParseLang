@@ -26,14 +26,6 @@ public class MaxSizeDoubleMap<A, B, C> {
         }
     }
 
-    public Optional<C> getOptional(A a, B b) {
-        if (contains(a, b)) {
-            return Optional.of(get(a, b));
-        } else {
-            return Optional.empty();
-        }
-    }
-
     public boolean contains(A a, B b) {
         return cache.containsKey(a) && cache.get(a).containsKey(b);
     }
@@ -51,10 +43,6 @@ public class MaxSizeDoubleMap<A, B, C> {
         cache.get(a).put(b, c);
     }
 
-    public void update(A a, B b, Function<C, C> function) {
-        cache.get(a).put(b, function.apply(cache.get(a).get(b)));
-    }
-
 
     private static <K, V> Map<K, V> createLimitedMap(final int maxSize) {
         return new LinkedHashMap<K, V>(maxSize*10/7, 0.7f, true) {
@@ -65,13 +53,4 @@ public class MaxSizeDoubleMap<A, B, C> {
         };
     }
 
-    public void computeIfAbsent(A a, B b, Function<Pair<A, B>, C> c) {
-        if (maxSize >= 1) {
-            cache.computeIfAbsent(a, integer -> createLimitedMap((int) (3 * Math.log(maxSize))));
-        } else {
-            cache.computeIfAbsent(a, integer -> new HashMap<>());
-        }
-        cache.get(a).computeIfAbsent(b, b1 -> c.apply(new Pair<>(a, b1)));
-
-    }
 }

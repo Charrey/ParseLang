@@ -11,5 +11,4 @@ public interface BiMap<K, V> extends Map<K, V> {
 
     Set<V> values();
 
-    BiMap<V, K> inverse();
 }

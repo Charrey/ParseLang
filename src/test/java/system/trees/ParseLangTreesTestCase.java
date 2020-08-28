@@ -23,8 +23,4 @@ public abstract class ParseLangTreesTestCase extends ParseLangTestCase {
         parser.setVerbosity(0);
     }
 
-    void test(String file) throws IOException, ParseErrorException {
-        super.testResource(file, new NonTerminal("Level1"));
-    }
-
 }

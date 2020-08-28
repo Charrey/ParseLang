@@ -2,7 +2,7 @@ package parselang.interpreter.data;
 
 public class PLNull extends PLData {
 
-    private static PLNull instance = new PLNull();
+    private static final PLNull instance = new PLNull();
 
     private PLNull(){}
 
@@ -23,5 +23,10 @@ public class PLNull extends PLData {
     @Override
     public int hashCode() {
         return 0;
+    }
+
+    @Override
+    public String classString() {
+        return "null";
     }
 }

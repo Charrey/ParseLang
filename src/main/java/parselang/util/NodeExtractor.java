@@ -41,7 +41,7 @@ public class NodeExtractor {
             List<Node> res;
             AST potentialStarNode = (AST) nodeContainer.getChild(1);
             boolean hasStar = potentialStarNode.getChildren().size() == 1;
-            res = hasStar ? Collections.singletonList(star(token)) : token;
+            res = hasStar ? Collections.singletonList(star(token)) : token; //todo: star nodes should be able to be bound
             if (firstChildRoot.getName().equals("Terminal")) {
                 return res;
             } else if (firstChildRoot.getName().equals("NonTerminal")) {
@@ -55,15 +55,29 @@ public class NodeExtractor {
                 } else {
                     return res;
                 }
-            } else {
+            } else if (firstChildRoot.getName().equals("StringLiteral")) {
                 return res;
+            } else if (firstChildRoot.getName().equals("BracketToken")){
+                AST potentialVariable = ((AST)nodeContainer.getChild(3));
+                if (potentialVariable.getChildren().size() > 0) {
+                    AST variable = (AST) potentialVariable.getChild(0);
+                    boolean lazy = isLazy(variable);
+                    String name = variable.subString(originalString);
+                    String trimmedname = lazy ? name.substring(0, name.length()-1) : name;
+                    return res.stream().map((Function<Node, Node>) node -> bound(node, trimmedname, lazy)).collect(Collectors.toList());
+                } else {
+                    return res;
+                }
+            } else {
+                throw new UnsupportedOperationException();
             }
         } else if (rootName.contains("Token")) {
-            List<List<Node>> nodesOfChildren = nodeContainer.getChildren().stream().map(ast -> extractNodes(originalString, ast)).collect(Collectors.toList());
-            Stream<Node> stream = Stream.of();
-            for (List<Node> nodesList : nodesOfChildren)
-                stream = Stream.concat(stream, nodesList.stream());
-            return stream.collect(Collectors.toList());
+            List<Node> res = new LinkedList<>();
+            for (ASTElem child : nodeContainer.getChildren()) {
+                List<Node> subNodes = extractNodes(originalString, child);
+                res.addAll(subNodes);
+            }
+            return res;
         } else {
             return new LinkedList<>();
         }

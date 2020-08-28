@@ -12,5 +12,5 @@ import java.util.*;
 public abstract class FirstCalculator extends TimedClass {
 
 
-    public abstract void updateFirst(Map<Node, Set<Character>> init, Map<NonTerminal, List<ParseRule>> rules, Collection<Terminal> terminals, Collection<NonTerminal> nonTerminals) throws UndefinedNontermException;
+    public abstract void updateFirst(Map<Node, Set<Character>> init, Map<NonTerminal, List<ParseRule>> rules, Collection<Terminal> terminals, Collection<NonTerminal> nonTerminals);
 }

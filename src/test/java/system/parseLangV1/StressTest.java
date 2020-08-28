@@ -16,7 +16,7 @@ import static parselang.parser.ParseRuleStorage.nonTerm;
 
 public class StressTest extends ParseLangV1TestCase {
 
-    private Analytics analytics = new Analytics();
+    private final Analytics analytics = new Analytics();
 
     @Test
     public void testManyDecls() throws IOException, ParseErrorException {

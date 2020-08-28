@@ -18,7 +18,7 @@ import static parselang.parser.ParseRuleStorage.term;
 public class TestAST extends ParseLangTreesTestCase {
 
     @Test
-    public void testASTStructure() throws IOException, ParseErrorException {
+    public void testASTStructure() throws ParseErrorException {
         String program = "ba";
         ParseResult result = parser.readFile(storage, program, new NonTerminal("Level1"));
         assertEquals("", result.getRemaining());

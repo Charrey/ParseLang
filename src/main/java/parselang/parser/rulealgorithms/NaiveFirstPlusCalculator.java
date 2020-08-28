@@ -9,7 +9,8 @@ public class NaiveFirstPlusCalculator extends FirstPlusCalculator {
 
     private static final LinkedHashSet<ParseRule> EMPTY_LINKED_HASHSET = new LinkedHashSet<>();
     @Override
-    public void computeFirstPlus(Map<NonTerminal, Map<Character, LinkedHashSet<ParseRule>>> rulesPlus, Map<NonTerminal, List<ParseRule>> rules, Map<Node, Set<Character>> first, Map<Node, Set<Character>> follow, Collection<Terminal> terminals, Collection<NonTerminal> nonTerminals) {
+    public void computeFirstPlus(Map<NonTerminal, Map<Character, TreeSet<ParseRule>>> rulesPlus, Map<NonTerminal, List<ParseRule>> rules, Map<Node, Set<Character>> first, Map<Node, Set<Character>> follow, Collection<NonTerminal> nonTerminals) {
+
         start();
         for (NonTerminal nonTerminal : nonTerminals) {
             rulesPlus.computeIfAbsent(nonTerminal, nonTerminal1 -> new HashMap<>());
@@ -18,13 +19,13 @@ public class NaiveFirstPlusCalculator extends FirstPlusCalculator {
             for (ParseRule rule : rules.get(nonTerminal)) {
                 Set<Character> firstOfRhs = firstOfList(rule.getRHS(), first);
                 for (Character character : firstOfRhs) {
-                    rulesPlus.get(nonTerminal).computeIfAbsent(character, character1 -> new LinkedHashSet<>());
+                    rulesPlus.get(nonTerminal).computeIfAbsent(character, character1 -> new TreeSet<>(Comparator.comparingInt(value -> rules.get(nonTerminal).indexOf(value))));
                     rulesPlus.get(nonTerminal).get(character).add(rule);
-                    rulesPlus.get(nonTerminal).get(character).addAll(rulesPlus.get(nonTerminal).getOrDefault(null, EMPTY_LINKED_HASHSET));
+                    rulesPlus.get(nonTerminal).get(character).addAll(rulesPlus.get(nonTerminal).getOrDefault(null, new TreeSet<>(Comparator.comparingInt(value -> rules.get(nonTerminal).indexOf(value)))));
                 }
                 if (firstOfRhs.contains(null)) {
                     for (Character character : follow.get(nonTerminal)) {
-                        rulesPlus.get(nonTerminal).computeIfAbsent(character, character1 -> new LinkedHashSet<>());
+                        rulesPlus.get(nonTerminal).computeIfAbsent(character, character1 -> new TreeSet<>(Comparator.comparingInt(value -> rules.get(nonTerminal).indexOf(value))));
                         rulesPlus.get(nonTerminal).get(character).add(rule);
                     }
                 }
@@ -33,7 +34,7 @@ public class NaiveFirstPlusCalculator extends FirstPlusCalculator {
         stop();
         for (NonTerminal nonTerminal : nonTerminals) {
             if (rulesPlus.get(nonTerminal).containsKey(null)) {
-                for (Map.Entry<Character, LinkedHashSet<ParseRule>> rule : rulesPlus.get(nonTerminal).entrySet()) {
+                for (Map.Entry<Character, TreeSet<ParseRule>> rule : rulesPlus.get(nonTerminal).entrySet()) {
                     if (rule.getKey() != null) {
                         rule.getValue().addAll(rulesPlus.get(nonTerminal).get(null));
                     }
@@ -41,6 +42,7 @@ public class NaiveFirstPlusCalculator extends FirstPlusCalculator {
             }
         }
     }
+
 
     private Set<Character> firstOfList(List<Node> list, Map<Node, Set<Character>> first) {
         list = list.stream().map(node -> {

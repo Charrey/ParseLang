@@ -28,7 +28,7 @@ public abstract class ParseLangTestCase {
         testString(contentsToExecute, toplevel);
     }
 
-    protected ParseResult testString(String program, NonTerminal toplevel) throws IOException, ParseErrorException {
+    protected ParseResult testString(String program, NonTerminal toplevel) throws ParseErrorException {
         ParseResult result = parser.readFile(storage, program, toplevel);
         assertEquals("", result.getRemaining());
         assertEquals(program, result.getParsed());

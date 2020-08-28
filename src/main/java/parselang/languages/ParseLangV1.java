@@ -103,21 +103,22 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("SafeSpecial").addRhs(term("-")));
         rules.add(new ParseRule("SafeSpecial").addRhs(term("!")));
         rules.add(new ParseRule("SafeSpecial").addRhs(term(",")));
+        rules.add(new ParseRule("SafeSpecial").addRhs(term("=")));
         rules.add(new ParseRule("SafeSpecial").addRhs(term("\"")));
 
         rules.add(new ParseRule("SafeChar").addRhs(nonTerm("UpperOrLowerCase")));
         rules.add(new ParseRule("SafeChar").addRhs(nonTerm("Number")));
         rules.add(new ParseRule("SafeChar").addRhs(nonTerm("SafeSpecial")));
+        rules.add(new ParseRule("SafeChar").addRhs(nonTerm("WhiteSpace")));
 
         rules.add(new ParseRule("NonTerminal").addRhs(nonTerm("UpperCase")).addRhs(star(nonTerm("UpperOrLowerCaseOrNumber"))));
 
-        rules.add(new ParseRule("StringLiteral").addRhs(term("'"))
-                .addRhs(star(nonTerm("SafeChar"))).addRhs(term("'")));
+        rules.add(new ParseRule("StringLiteral").addRhs(term("'")).addRhs(star(nonTerm("SafeChar"))).addRhs(term("'")));
         rules.add(new ParseRule("Token").addRhs(nonTerm("StringLiteral"), nonTerm("PotentialStar")));
         rules.add(new ParseRule("BracketToken").addRhs(term("(")).addRhs(star(ws(), nonTerm("Token"))).addRhs(term(")")));
 
-        rules.add(new ParseRule("Token").addRhs(nonTerm("BracketToken"), nonTerm("PotentialStar")));
-        rules.add(new ParseRule("Token").addRhs(nonTerm("NonTerminal"), nonTerm("PotentialStar"), ws(), nonTerm("PotentialVariable")));
+        rules.add(new ParseRule("Token").addRhs(nonTerm("BracketToken"), nonTerm("PotentialStar"), ws(), bound(nonTerm("PotentialVariable"), "e", false)));
+        rules.add(new ParseRule("Token").addRhs(nonTerm("NonTerminal"), nonTerm("PotentialStar"), ws(), bound(nonTerm("PotentialVariable"), "e", false)));
         rules.add(new ParseRule("PotentialVariable").addRhs(nonTerm("Variable")));
         rules.add(new ParseRule("PotentialVariable"));
 
@@ -127,8 +128,17 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("PotentialStar").addRhs(term("*")));
         rules.add(new ParseRule("PotentialStar"));
 
+
+        rules.add(new ParseRule("Comparator").addRhs(term("==")));
+        rules.add(new ParseRule("Comparator").addRhs(term("!=")));
+        rules.add(new ParseRule("Comparator").addRhs(term("<=")));
+        rules.add(new ParseRule("Comparator").addRhs(term(">=")));
         rules.add(new ParseRule("Comparator").addRhs(term("<")));
         rules.add(new ParseRule("Comparator").addRhs(term(">")));
+
+        rules.add(new ParseRule("GTorLT").addRhs(term("<")));
+        rules.add(new ParseRule("GTorLT").addRhs(term(">")));
+
 
         rules.add(new ParseRule("DelimitedSentence").addRhs(bound(nonTerm("Expression"), "e", false)));
 
@@ -148,16 +158,26 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("PlusOrMinus").addRhs(term("+")));
         rules.add(new ParseRule("PlusOrMinus").addRhs(term("-")));
 
-        rules.add(new ParseRule("Expression").addRhs(bound(nonTerm("ComparitiveExpression"), "e", false)));
-        rules.add(new ParseRule("ComparitiveExpression").addRhs(bound(nonTerm("AdditiveExpression"), "e", false), bound(star(nonTerm("Comparator"), ws(), nonTerm("AdditiveExpression")), "e2", false), ws()));
-        rules.add(new ParseRule("AdditiveExpression").addRhs(bound(nonTerm("MultiplicativeExpression"), "e", false), bound(star(nonTerm("PlusOrMinus"), ws(), nonTerm("MultiplicativeExpression")), "e2", false), ws()));
-        rules.add(new ParseRule("MultiplicativeExpression").addRhs(bound(nonTerm("SimpleExpression"), "e", false),   bound(star(term("*"), ws(), nonTerm("SimpleExpression")), "e2", false), ws()));
+        rules.add(new ParseRule("TimesDivisionOrModulo").addRhs(term("*")));
+        rules.add(new ParseRule("TimesDivisionOrModulo").addRhs(term("/")));
+        rules.add(new ParseRule("TimesDivisionOrModulo").addRhs(term("%")));
+
+
+        rules.add(new ParseRule("Expression")              .addRhs(bound(nonTerm("ComparitiveExpression"   ), "e", false)));
+        rules.add(new ParseRule("ComparitiveExpression")   .addRhs(bound(nonTerm("AdditiveExpression"      ), "e", false), bound(star(nonTerm("Comparator"), ws(), nonTerm("AdditiveExpression")), "e2", false), ws()));
+        rules.add(new ParseRule("AdditiveExpression")      .addRhs(bound(nonTerm("MultiplicativeExpression"), "e", false), bound(star(nonTerm("PlusOrMinus"), ws(), nonTerm("MultiplicativeExpression")), "e2", false), ws()));
+        rules.add(new ParseRule("MultiplicativeExpression").addRhs(bound(nonTerm("SingleExpression"        ), "e", false), bound(star(nonTerm("TimesDivisionOrModulo"), ws(), nonTerm("SingleExpression")), "e2", false), ws()));
+
+        rules.add(new ParseRule("SingleExpression").addRhs(bound(nonTerm("SimpleExpression"), "e", false), bound(star(term("["), ws(), nonTerm("Expression"), ws(), term("]")), "e2", false)));
+
         rules.add(new ParseRule("SimpleExpression").addRhs(term("("), ws(), bound(nonTerm("Expression"), "e", false), ws(), term(")")));
         rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("NumberLiteral"), "e", false), ws()));
         rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("StringLiteral"), "e", false), ws()));
         rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("BooleanLiteral"), "e", false), ws()));
         rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("ParameterName"), "e", false), ws()));
         rules.add(new ParseRule("SimpleExpression").addRhs(term("~concat"), ws(), term("("), ws(), bound(nonTerm("Expression"), "e", false), ws(), term(")"), ws()));
+        rules.add(new ParseRule("SimpleExpression").addRhs(term("~if"), ws(), term("("), ws(), bound(nonTerm("Expression"), "e", false), ws(), term(","), ws(), bound(nonTerm("Expression"), "e2", false), ws(), term(","), ws(), bound(nonTerm("Expression"), "e3", false), ws(), term(")"), ws()));
+        rules.add(new ParseRule("SimpleExpression").addRhs(term("~map")));
         rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("Data"), "e", false), ws()));
         rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("ListLiteral"), "e", false), ws()));
 
@@ -173,7 +193,9 @@ public class ParseLangV1 implements Language {
 
         rules.add(new ParseRule("OptionalExpression").addRhs(bound(nonTerm("Expression"), "e", false)));
 
-        rules.add(new ParseRule("Data").addRhs(nonTerm("RegisteredNonTerminal"), term("["), bound(nonTerm("Expression"), "e", false), term("]"), ws(), nonTerm("OptionalAssignment")));
+        rules.add(new ParseRule("InsideOrOutside").addRhs(term("inside")));
+        rules.add(new ParseRule("InsideOrOutside").addRhs(term("outside")));
+        rules.add(new ParseRule("Data").addRhs(nonTerm("InsideOrOutside"), bound(star(term("["), nonTerm("Expression"), term("]")), "e", false), ws(), nonTerm("OptionalAssignment")));
         rules.add(new ParseRule("OptionalAssignment").addRhs(term("="), ws(), bound(nonTerm("Expression"), "e", false)));
         rules.add(new ParseRule("OptionalAssignment"));
 
@@ -184,7 +206,7 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("Declaration").addRhs(
                 nonTerm("NonTerminal"),
                 ws(),
-                nonTerm("Comparator"),
+                nonTerm("GTorLT"),
                 ws(),
                 nonTerm("NonTerminal"),
                 ws(),

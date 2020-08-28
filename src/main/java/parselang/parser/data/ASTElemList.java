@@ -11,10 +11,6 @@ public class ASTElemList extends ASTElem implements Iterable<ASTElem> {
     public ASTElemList() {
     }
 
-    public ASTElemList(List<ASTElem> subList) {
-        nodeList = subList;
-    }
-
     public String pp(int indent) {
         String prefix = new String(new char[indent]).replace("\0", "\t");
 

@@ -14,6 +14,6 @@ import java.util.Set;
 
 public abstract class FollowCalculator extends TimedClass {
 
-    public abstract void updateFollow(Map<Node, Set<Character>> follow, Node startSymbol, Map<Node, Set<Character>> first, Map<NonTerminal, List<ParseRule>> rules, Collection<Terminal> terminals, Collection<NonTerminal> nonTerminals);
+    public abstract void updateFollow(Map<Node, Set<Character>> follow, Node startSymbol, Map<Node, Set<Character>> first, Map<NonTerminal, List<ParseRule>> rules, Collection<NonTerminal> nonTerminals);
 
 }

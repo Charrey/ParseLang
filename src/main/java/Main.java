@@ -16,14 +16,15 @@ import static parselang.parser.ParseRuleStorage.nonTerm;
 
 public class Main {
 
-    public static void main(String[] args) throws UndefinedNontermException, ParseErrorException, IOException {
+    public static void main(String[] args) throws UndefinedNontermException, IOException {
         //runDemo("examples/doublequotes.plang");
         //runDemo("examples/test.plang");
         //runDemo("examples/gcd.plang");
-        runDemo("examples/concat.plang");
+        runDemo("examples/demo.plang");
+        //runDemo("examples/concat.plang");
     }
 
-    private static void runDemo(String path) throws IOException, UndefinedNontermException, ParseErrorException {
+    private static void runDemo(String path) throws IOException, UndefinedNontermException {
         String program = new String(Files.readAllBytes(Paths.get(path)));
         System.out.println("----------------------------------------------------------------");
         System.out.println(program);

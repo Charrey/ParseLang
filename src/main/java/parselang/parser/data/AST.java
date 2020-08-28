@@ -16,19 +16,16 @@ public class AST extends ASTElem  {
 
     private final List<ASTElem> children = new LinkedList<>();
 
-    public AST(Node root) {
-        this(root, null);
-    }
 
     public ParseRule getRule() {
         return ruleApplied;
     }
 
-    public AST(Node root, ParseRuleStorage storage) {
+    public AST(Node root) {
         this.root = root;
     }
 
-    public void setParsed(String original, int from, int to) {
+    public void setParsed(int from, int to) {
         parsedFrom = from;
         parsedTo = to;
     }

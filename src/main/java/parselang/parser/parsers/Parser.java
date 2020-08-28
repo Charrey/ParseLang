@@ -27,8 +27,6 @@ public abstract class Parser extends TimedClass {
         return parsed;
     }
 
-    Logger log = Logger.getLogger(RecursiveParser.class.getName());
-
     public void setVerbosity(int level) {
         this.verbosity = level;
     }
