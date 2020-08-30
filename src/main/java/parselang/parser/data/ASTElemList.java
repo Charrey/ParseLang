@@ -22,12 +22,32 @@ public class ASTElemList extends ASTElem implements Iterable<ASTElem> {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ASTElemList astElems = (ASTElemList) o;
+        return nodeList.equals(astElems.nodeList);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nodeList);
+    }
+
+    @Override
     public String parseString() {
         StringBuilder sb = new StringBuilder();
         for (ASTElem child : nodeList) {
             sb.append(child.parseString());
         }
         return sb.toString();
+    }
+
+    @Override
+    public ASTElem copy() {
+        ASTElemList res = new ASTElemList();
+        nodeList.forEach(x -> res.nodeList.add(x.copy()));
+        return res;
     }
 
     @Override

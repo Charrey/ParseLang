@@ -6,6 +6,11 @@ public class BoundNonTerminal extends Node {
     private final Node nonTerm;
     private final boolean lazy;
 
+    @Override
+    public Node copy() {
+        return new BoundNonTerminal(nonTerm.copy(), name, lazy);
+    }
+
     public BoundNonTerminal(Node nonTerm, String name, boolean lazy) {
         this.nonTerm = nonTerm;
         this.name = name;
@@ -38,6 +43,7 @@ public class BoundNonTerminal extends Node {
     public boolean isLazy() {
         return lazy;
     }
+
 
 
 }

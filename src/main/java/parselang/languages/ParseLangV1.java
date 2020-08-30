@@ -195,7 +195,7 @@ public class ParseLangV1 implements Language {
 
         rules.add(new ParseRule("InsideOrOutside").addRhs(term("inside")));
         rules.add(new ParseRule("InsideOrOutside").addRhs(term("outside")));
-        rules.add(new ParseRule("Data").addRhs(nonTerm("InsideOrOutside"), bound(star(term("["), nonTerm("Expression"), term("]")), "e", false), ws(), nonTerm("OptionalAssignment")));
+        rules.add(new ParseRule("Data").addRhs(term("~data"), bound(star(term("["), nonTerm("Expression"), term("]")), "e", false), ws(), nonTerm("OptionalAssignment")));
         rules.add(new ParseRule("OptionalAssignment").addRhs(term("="), ws(), bound(nonTerm("Expression"), "e", false)));
         rules.add(new ParseRule("OptionalAssignment"));
 

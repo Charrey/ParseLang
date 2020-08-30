@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public class PLList extends PLData {
+public class PLList extends PLData implements PLIndexable {
 
     private final ArrayList<PLData> content = new ArrayList<>();
 
@@ -36,7 +36,7 @@ public class PLList extends PLData {
         return Objects.hash(content);
     }
 
-    public PLData get(BigInteger bigInteger) {
+    private PLData get(BigInteger bigInteger) {
         if (bigInteger.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0) {
             throw new IllegalArgumentException("List index must be smaller than " + Integer.MAX_VALUE + "!");
         }
@@ -48,9 +48,6 @@ public class PLList extends PLData {
         return "list";
     }
 
-    public PLData get(PLInteger key) {
-        return get(key.get());
-    }
 
     public void set(PLInteger index, PLData value) {
         if (index.get().compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0) {
@@ -64,5 +61,23 @@ public class PLList extends PLData {
         }
         content.set(index.get().intValue(), value);
 
+    }
+
+    @Override
+    public PLData get(PLData key) {
+        if (!(key instanceof PLInteger)) {
+            throw new IllegalArgumentException("List index must be integer!");
+        } else {
+            return get(((PLInteger)key).get());
+        }
+    }
+
+    @Override
+    public void set(PLData key, PLData value) {
+        if (key instanceof PLInteger) {
+            set((PLInteger)key, value);
+        } else {
+            throw new IllegalArgumentException("List can only be indexed with integer!");
+        }
     }
 }

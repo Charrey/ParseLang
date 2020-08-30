@@ -7,6 +7,11 @@ public class StarNode extends Node {
 
     private final Node[] inner;
 
+    @Override
+    public Node copy() {
+        return new StarNode(Arrays.stream(inner).map(Node::copy).toArray(Node[]::new));
+    }
+
     public StarNode(Node... inner) {
         this.inner = inner;
     }
@@ -43,4 +48,6 @@ public class StarNode extends Node {
     public int hashCode() {
         return Arrays.hashCode(inner);
     }
+
+
 }

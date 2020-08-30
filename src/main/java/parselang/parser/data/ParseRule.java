@@ -107,9 +107,15 @@ public class ParseRule {
         }
     }
 
-    private ParseRule copy() {
-        ParseRule res = new ParseRule(this.lhs);
-        res.addRhs(this.rhs.toArray(new Node[0]));
+    ParseRule copy() {
+        ParseRule res = new ParseRule((NonTerminal) this.lhs.copy());
+        res.addRhs(this.rhs.stream().map(Node::copy).toArray(Node[]::new));
+        if (origin == this) {
+            res.origin = res;
+        } else {
+            res.origin = origin.copy();
+        }
+        assert this.equals(res);
         return res;
     }
 

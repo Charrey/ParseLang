@@ -28,4 +28,9 @@ public class Terminal extends Node {
     public String getValue() {
         return value;
     }
+
+    @Override
+    public Node copy() {
+        return new Terminal(value);
+    }
 }

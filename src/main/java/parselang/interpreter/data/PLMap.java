@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class PLMap extends PLData {
+public class PLMap extends PLData implements PLIndexable {
 
     private final Map<PLData, PLData> content = new HashMap<>();
 
@@ -16,12 +16,29 @@ public class PLMap extends PLData {
         content.put(key, value);
     }
 
+    @Override
     public PLData get(PLData key) {
         if (!content.containsKey(key)) {
-            throw new IllegalArgumentException("Map " + this + " does not contain key " + key);
-        } else {
-            return content.get(key);
+            put(key, new PLMap());
         }
+        return content.get(key);
+    }
+
+    @Override
+    public void set(PLData key, PLData value) {
+        put(key, value);
+    }
+
+    public PLData get(List<PLData> keys) {
+        final PLData[] current = {this};
+        keys.forEach(plData -> {
+            if (!(current[0] instanceof PLIndexable)) {
+                throw new IllegalArgumentException(plData.classString() +" cannot be indexed!");
+            } else {
+                current[0] = ((PLIndexable) current[0]).get(plData);
+            }
+        });
+        return current[0];
     }
 
     @Override

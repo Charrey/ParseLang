@@ -1,9 +1,7 @@
 
 
 GCD < SimpleExpression = 'Foo' Expression a 'Fa' Expression b {
-    GCD['a'] = a;
-    GCD['b'] = b;
-    GCD['b'];
+    ~concat([a,b])
 }
 
 Foo3Fa5

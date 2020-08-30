@@ -9,5 +9,5 @@ public abstract class ASTElem implements ParameterValue {
     public abstract String parseString();
 
 
-
+    public abstract ASTElem copy();
 }

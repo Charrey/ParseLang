@@ -4,11 +4,12 @@ import parselang.parser.ParseRuleStorage;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 public class AST extends ASTElem  {
 
     private ParseRule ruleApplied;
-    private final Node root;
+    private Node root;
 
     private int parsedFrom;
     private int parsedTo;
@@ -16,6 +17,32 @@ public class AST extends ASTElem  {
 
     private final List<ASTElem> children = new LinkedList<>();
 
+    @Override
+    public ASTElem copy() {
+        AST res = new AST(root.copy());
+        res.ruleApplied = ruleApplied == null ? null : ruleApplied.copy();
+        res.parsedFrom = parsedFrom;
+        res.parsedTo = parsedTo;
+        children.forEach(x -> res.children.add(x.copy()));
+        return res;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AST ast = (AST) o;
+        return parsedFrom == ast.parsedFrom &&
+                parsedTo == ast.parsedTo &&
+                Objects.equals(ruleApplied, ast.ruleApplied) &&
+                root.equals(ast.root) &&
+                children.equals(ast.children);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ruleApplied, root, parsedFrom, parsedTo, children);
+    }
 
     public ParseRule getRule() {
         return ruleApplied;
@@ -87,6 +114,8 @@ public class AST extends ASTElem  {
         }
     }
 
+
+
     public Node getRoot() {
         return root;
     }
@@ -117,5 +146,9 @@ public class AST extends ASTElem  {
 
     public int getParsedFrom() {
         return parsedFrom;
+    }
+
+    public void setRoot(Node root) {
+        this.root = root;
     }
 }
