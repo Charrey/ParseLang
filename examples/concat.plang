@@ -1,7 +1,7 @@
 
 
-GCD < SimpleExpression = 'Foo' Expression a 'Fa' Expression b {
+ConcatExpression < SimpleExpression = 'concat ' Expression a 'with ' Expression b {
     ~concat([a,b])
 }
 
-Foo3Fa5
+concat 3 with 5

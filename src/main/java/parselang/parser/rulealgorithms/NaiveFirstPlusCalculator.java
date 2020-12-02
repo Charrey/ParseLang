@@ -5,13 +5,17 @@ import parselang.parser.data.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Default FIRST+ calculator
+ */
 public class NaiveFirstPlusCalculator extends FirstPlusCalculator {
 
-    private static final LinkedHashSet<ParseRule> EMPTY_LINKED_HASHSET = new LinkedHashSet<>();
+    /**
+     * @inheritDoc
+     */
     @Override
-    public void computeFirstPlus(Map<NonTerminal, Map<Character, TreeSet<ParseRule>>> rulesPlus, Map<NonTerminal, List<ParseRule>> rules, Map<Node, Set<Character>> first, Map<Node, Set<Character>> follow, Collection<NonTerminal> nonTerminals) {
-
-        start();
+    public Map<NonTerminal, Map<Character, TreeSet<ParseRule>>> computeFirstPlus(Map<NonTerminal, List<ParseRule>> rules, Map<Node, Set<Character>> first, Map<Node, Set<Character>> follow, Collection<NonTerminal> nonTerminals) {
+        Map<NonTerminal, Map<Character, TreeSet<ParseRule>>> rulesPlus = new HashMap<>();
         for (NonTerminal nonTerminal : nonTerminals) {
             rulesPlus.computeIfAbsent(nonTerminal, nonTerminal1 -> new HashMap<>());
         }
@@ -31,7 +35,6 @@ public class NaiveFirstPlusCalculator extends FirstPlusCalculator {
                 }
             }
         }
-        stop();
         for (NonTerminal nonTerminal : nonTerminals) {
             if (rulesPlus.get(nonTerminal).containsKey(null)) {
                 for (Map.Entry<Character, TreeSet<ParseRule>> rule : rulesPlus.get(nonTerminal).entrySet()) {
@@ -41,13 +44,14 @@ public class NaiveFirstPlusCalculator extends FirstPlusCalculator {
                 }
             }
         }
+        return rulesPlus;
     }
 
 
     private Set<Character> firstOfList(List<Node> list, Map<Node, Set<Character>> first) {
         list = list.stream().map(node -> {
-            if (node instanceof BoundNonTerminal) {
-                node = ((BoundNonTerminal) node).getContent();
+            if (node instanceof BoundNode) {
+                node = ((BoundNode) node).getContent();
             }
             return node;
         }).collect(Collectors.toList());

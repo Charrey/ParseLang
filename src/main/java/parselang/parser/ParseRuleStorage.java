@@ -4,53 +4,51 @@ package parselang.parser;
 import parselang.languages.Language;
 import parselang.parser.data.*;
 import parselang.parser.rulealgorithms.*;
-import parselang.util.Pair;
 
 import java.util.*;
-import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 public class ParseRuleStorage {
 
-    private Set<Pair<ParseRule, Direction>> addedRules;
+
 
     private final Map<NonTerminal, List<ParseRule>> rules = new HashMap<>();
-    private final Map<Node, Set<Character>> first = new HashMap<>();
-    private final Map<Node, Set<Character>> follow = new HashMap<>();
-    private final Map<NonTerminal, Map<Character, TreeSet<ParseRule>>> rulesPlus = new HashMap<>();
+    private Map<NonTerminal, Map<Character, TreeSet<ParseRule>>> firstPlus = new HashMap<>();
     private final Set<NonTerminal> allNonterminals = new HashSet<>();
 
-    public final FirstCalculator firstCalc = new NaiveFirstCalculator();
-    public final FollowCalculator followCalc = new NaiveFollowCalculator();
-    public final FirstPlusCalculator firstPlusCalc = new NaiveFirstPlusCalculator();
+    private final FirstCalculator firstCalc = new NaiveFirstCalculator();
+    private final FollowCalculator followCalc = new NaiveFollowCalculator();
+    private final FirstPlusCalculator firstPlusCalc = new NaiveFirstPlusCalculator();
+    private NonTerminal toplevel;
 
 
-    public void prepare(Language lang, NonTerminal toplevel) throws UndefinedNontermException {
-        addedRules = new HashSet<>();
+    /**
+     * Prepares the parse rule storage with the standard rule set of a language
+     * @param lang language to use
+     * @param toplevel top level nonterminal of this language
+     */
+    public void prepare(Language lang, NonTerminal toplevel) {
+        this.toplevel = toplevel;
         setDefaults(lang);
-        calculateFirst();
-        calculateFollow(toplevel);
-        calculateFirstPlus();
+        calculateFirstPlus(toplevel);
     }
 
-    public void addCustomRules(Pair<ParseRule, Direction> inheritedRule, Pair<ParseRule, Direction> addedRule, NonTerminal toplevel) {
-        addedRules.add(inheritedRule);
-        addedRules.add(addedRule);
-        addRule(inheritedRule.getKey(), inheritedRule.getValue());
-        addRule(addedRule.getKey(), addedRule.getValue());
-        try {
-            calculateFirst();
-        } catch (UndefinedNontermException e) {
-            //This should not happen??
-            throw new RuntimeException();
-        }
-        calculateFollow(toplevel);
-        calculateFirstPlus();
+    /**
+     * Adds the result of a user declaration to this parserule storage
+     * @param inheritedRule inherited rule to add
+     * @param inheritedRuleDirection whether to add it to the front or back of the rules to be used by the packrat parser
+     * @param addedRule rule that was added by the user
+     */
+    public void addCustomRules(ParseRule inheritedRule, Direction inheritedRuleDirection, ParseRule addedRule) {
+        addRule(inheritedRule, inheritedRuleDirection);
+        addRule(addedRule, Direction.RIGHT);
+        calculateFirstPlus(toplevel);
     }
 
-    private void addRule(ParseRule rule, Direction dir) {
+    private List<ParseRule> addRule(ParseRule rule, Direction dir) {
         List<ParseRule> rules = rule.convertStarNodes();
         addRules(rules, dir);
+        return rules;
     }
 
     private void addMissingNonterminals(Collection<Node> nodes) {
@@ -60,8 +58,8 @@ public class ParseRuleStorage {
                 this.rules.putIfAbsent((NonTerminal) node, new LinkedList<>());
             } else if (node instanceof StarNode) {
                 addMissingNonterminals(((StarNode) node).contents());
-            } else if (node instanceof BoundNonTerminal) {
-                addMissingNonterminals(Collections.singleton(((BoundNonTerminal) node).getContent()));
+            } else if (node instanceof BoundNode) {
+                addMissingNonterminals(Collections.singleton(((BoundNode) node).getContent()));
             }
         }
     }
@@ -82,45 +80,82 @@ public class ParseRuleStorage {
         }
     }
 
-
+    /**
+     * Returns an ordered collection of applicable rules to parse a nonterminal with a single character lookahead.
+     * @param nonTerminal nonterminal to parse to
+     * @param startsWith a single character lookahead
+     * @return an ordered collection of rules to try
+     */
     public Collection<ParseRule> getByNonTerminal(Node nonTerminal, Character startsWith) {
         if (!(nonTerminal instanceof NonTerminal)) {
             return Collections.emptyList();
         }
-        if (rulesPlus.containsKey(nonTerminal)) {
-            if (rulesPlus.get(nonTerminal).containsKey(startsWith)) {
-                return rulesPlus.get(nonTerminal).get(startsWith);
+        if (firstPlus.containsKey(nonTerminal)) {
+            if (firstPlus.get(nonTerminal).containsKey(startsWith)) {
+                return firstPlus.get(nonTerminal).get(startsWith);
             }
-            return rulesPlus.get(nonTerminal).getOrDefault(null, new TreeSet<>(Comparator.comparingInt(value -> rules.get(nonTerminal).indexOf(value))));
+            return firstPlus.get(nonTerminal).getOrDefault(null, new TreeSet<>(Comparator.comparingInt(value -> rules.get(nonTerminal).indexOf(value))));
         } else {
             System.out.println("Warning! No such rule! => " + ((NonTerminal)nonTerminal).getName() + ", starts with: \"" + startsWith + "\"");
             return Collections.emptyList();
         }
     }
 
+    /**
+     * Shorthand for WhiteSpace*
+     * @return a node representing WhiteSpace*
+     */
     public static Node ws() {
         return new StarNode(nonTerm("WhiteSpace"));
     }
 
+    /**
+     * Shorthand for new NonTerminal()
+     * @param name name of a nonterminal
+     * @return a nonterminal with that name
+     */
     public static NonTerminal nonTerm(String name) {
-        return new NonTerminal(name);
+        return new NonTerminal(name, false);
     }
 
+    /**
+     * Shorthand for new Terminal()
+     * @param name value of a terminal
+     * @return a terminal with that value
+     */
     public static Terminal term(String name) {
         return new Terminal(name);
     }
 
-    public static BoundNonTerminal bound(Node node, String name, boolean lazy) {
-        return new BoundNonTerminal(node, name, lazy);
+    /**
+     * Shorthand for new BoundNode()
+     * @param node node to bind
+     * @param name name of parameter
+     * @param lazy whether the parameter is lazy
+     * @return a bound node
+     */
+    public static BoundNode bound(Node node, String name, boolean lazy) {
+        return new BoundNode(node, name, lazy);
     }
 
+    /**
+     * Shorthand for new StarNode()
+     * @param content nodes affected by the kleene star
+     * @return a star node
+     */
     public static Node star(Node... content) {
         return new StarNode(content);
     }
 
+    /**
+     * Shorthand for new StarNode()
+     * @param content nodes affected by the kleene star
+     * @return a star node
+     */
     public static Node star(List<Node> content) {
         return new StarNode(content.toArray(new Node[0]));
     }
+
 
     private void setDefaults(Language language) {
         List<ParseRule> originalRules = language.getRules();
@@ -129,7 +164,10 @@ public class ParseRuleStorage {
         }
     }
 
-
+    /**
+     * @inheritDoc
+     */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         List<NonTerminal> nonTerminalDomain = rules.keySet().stream().sorted(Comparator.comparing(NonTerminal::getName)).collect(Collectors.toList());
@@ -167,53 +205,53 @@ public class ParseRuleStorage {
         return res;
     }
 
+    /**
+     * Returns all nonterminals occurring in this parse rule storage
+     * @return all nonterminals
+     */
     public Set<NonTerminal> getAllNonTerminals() {
         return allNonterminals;
     }
 
-    private void calculateFirst() throws UndefinedNontermException {
-        firstCalc.updateFirst(first, rules, getAllTerminals(), getAllNonTerminals());
-    }
 
-    private void calculateFirstPlus() {
-        firstPlusCalc.computeFirstPlus(rulesPlus, rules, first, follow, getAllNonTerminals());
-    }
-
-    private void calculateFollow(NonTerminal startSymbol) {
-        followCalc.updateFollow(follow, startSymbol, first, rules, getAllNonTerminals());
-    }
-
-    public Set<Pair<ParseRule, Direction>> getAddedRulesDirections() {
-        return addedRules;
+    private void calculateFirstPlus(NonTerminal topLevel) {
+        Map<Node, Set<Character>> first = firstCalc.computeFirst(rules, getAllTerminals(), getAllNonTerminals());
+        Map<Node, Set<Character>> follow = followCalc.computeFollow(topLevel, first, rules, getAllNonTerminals());
+        firstPlus = firstPlusCalc.computeFirstPlus(rules, first, follow, getAllNonTerminals());
     }
 
 
-    public void addTemporary(ParseRule ruleToAdd, NonTerminal toplevel) {
-        addedRules.add(new Pair<>(ruleToAdd, Direction.RIGHT));
-        addRule(ruleToAdd, Direction.RIGHT);
-        try {
-            calculateFirst();
-        } catch (UndefinedNontermException e) {
-            throw new RuntimeException();
-        }
-        calculateFollow(toplevel);
-        calculateFirstPlus();
+    final Set<ParseRule> parameterNameRules = new HashSet<>();
+
+    /**
+     * Add a rule for a parameter name such that it is parsed as such
+     * @param parameterName name of the parameter
+     */
+    public void addParameter(String parameterName) {
+        parameterNameRules.addAll(addRule(new ParseRule("ParameterName").addRhs(term(parameterName)), Direction.RIGHT));
+        calculateFirstPlus(toplevel);
     }
 
     private final Set<NonTerminal> registered = new HashSet<>();
 
-    public void registerNonTerminal(NonTerminal nonTerminal, NonTerminal toplevel) {
+    /**
+     * Registers a new nonterminal as being present somewhere in this storage
+     * @param nonTerminal the nonterminal to register
+     */
+    public void registerNonTerminal(NonTerminal nonTerminal) {
         if (!registered.contains(nonTerminal)) {
             registered.add(nonTerminal);
             addRule(new ParseRule("RegisteredNonTerminal").addRhs(term(nonTerminal.getName())), Direction.LEFT);
-            try {
-                calculateFirst();
-            } catch (UndefinedNontermException e) {
-                //This should not happen??
-                throw new RuntimeException();
-            }
-            calculateFollow(toplevel);
-            calculateFirstPlus();
+            calculateFirstPlus(toplevel);
         }
+    }
+
+    /**
+     * Clears all rules added for parameter names
+     */
+    public void removeParameters() {
+        parameterNameRules.forEach(x -> rules.get(x.getLHS()).remove(x));
+        parameterNameRules.clear();
+        calculateFirstPlus(toplevel);
     }
 }

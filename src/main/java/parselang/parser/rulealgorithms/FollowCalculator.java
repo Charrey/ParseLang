@@ -1,19 +1,28 @@
 package parselang.parser.rulealgorithms;
 
-import parselang.parser.UndefinedNontermException;
 import parselang.parser.data.Node;
 import parselang.parser.data.NonTerminal;
 import parselang.parser.data.ParseRule;
-import parselang.parser.data.Terminal;
-import parselang.util.TimedClass;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class FollowCalculator extends TimedClass {
+/**
+ * Class that calculates the FOLLOW set of an LL(1) parser.
+ */
+public abstract class FollowCalculator {
 
-    public abstract void updateFollow(Map<Node, Set<Character>> follow, Node startSymbol, Map<Node, Set<Character>> first, Map<NonTerminal, List<ParseRule>> rules, Collection<NonTerminal> nonTerminals);
+    /**
+     * Calculates the FOLLOW set of an LL(1) parser.
+     *
+     * @param topLevel toplevel nonterminal of the parsing process
+     * @param first FIRST set of this LL(1) parser
+     * @param rules All parse rules sorted by left hand side
+     * @param nonTerminals set of all nonterminals
+     * @return FOLLOW set of an LL(1) parser.
+     */
+    public abstract Map<Node, Set<Character>> computeFollow(Node topLevel, Map<Node, Set<Character>> first, Map<NonTerminal, List<ParseRule>> rules, Collection<NonTerminal> nonTerminals);
 
 }

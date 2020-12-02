@@ -1,16 +1,20 @@
 package parselang.parser.rulealgorithms;
 
-import parselang.parser.UndefinedNontermException;
 import parselang.parser.data.*;
 
 import java.util.*;
-import java.util.function.Function;
 
+/**
+ * Default FIRST calculator
+ */
 public class NaiveFirstCalculator extends FirstCalculator {
 
+    /**
+     * @inheritDoc
+     */
     @Override
-    public void updateFirst(Map<Node, Set<Character>> first, Map<NonTerminal, List<ParseRule>> rules, Collection<Terminal> terminals, Collection<NonTerminal> nonTerminals) {
-        start();
+    public Map<Node, Set<Character>> computeFirst(Map<NonTerminal, List<ParseRule>> rules, Collection<Terminal> terminals, Collection<NonTerminal> nonTerminals) {
+        Map<Node, Set<Character>> first = new HashMap<>();
         for (Terminal term : terminals) {
             first.computeIfAbsent(term, node -> Collections.singleton(term.getValue().charAt(0)));
         }
@@ -37,8 +41,8 @@ public class NaiveFirstCalculator extends FirstCalculator {
                     Deque<Node> toConsider = new ArrayDeque<>(rule.getRHS());
                     while (!toConsider.isEmpty()) {
                         Node rhsElem = toConsider.pop();
-                        if (rhsElem instanceof BoundNonTerminal) {
-                            toConsider.push(((BoundNonTerminal) rhsElem).getContent());
+                        if (rhsElem instanceof BoundNode) {
+                            toConsider.push(((BoundNode) rhsElem).getContent());
                             continue;
                         }
                         if (first.get(nt).addAll(first.get(rhsElem))) {
@@ -57,6 +61,6 @@ public class NaiveFirstCalculator extends FirstCalculator {
                 }
             }
         }
-        stop();
+        return first;
     }
 }

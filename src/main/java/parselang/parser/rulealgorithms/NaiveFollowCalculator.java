@@ -4,14 +4,22 @@ import parselang.parser.data.*;
 
 import java.util.*;
 
+/**
+ * Default FOLLOW calculator
+ */
 public class NaiveFollowCalculator extends FollowCalculator {
+
+
+    /**
+     * @inheritDoc
+     */
     @Override
-    public void updateFollow(Map<Node, Set<Character>> follow, Node startSymbol, Map<Node, Set<Character>> first, Map<NonTerminal, List<ParseRule>> rules, Collection<NonTerminal> nonTerminals) {
-        start();
+    public Map<Node, Set<Character>> computeFollow(Node topLevel, Map<Node, Set<Character>> first, Map<NonTerminal, List<ParseRule>> rules, Collection<NonTerminal> nonTerminals) {
+        Map<Node, Set<Character>> follow = new HashMap<>();
         for (NonTerminal nt : nonTerminals) {
             follow.put(nt, new HashSet<>());
         }
-        follow.get(startSymbol).add(null);
+        follow.get(topLevel).add(null);
         boolean changed = true;
         while (changed) {
             changed = false;
@@ -34,8 +42,8 @@ public class NaiveFollowCalculator extends FollowCalculator {
 
                     while (!toView.isEmpty()) {
                         Node last = toView.pop();
-                        if (last instanceof BoundNonTerminal) {
-                            toView.push(((BoundNonTerminal) last).getContent());
+                        if (last instanceof BoundNode) {
+                            toView.push(((BoundNode) last).getContent());
                             continue;
                         }
                         if (!(toView.peek() instanceof  NonTerminal)) {
@@ -53,6 +61,6 @@ public class NaiveFollowCalculator extends FollowCalculator {
                 }
             }
         }
-        stop();
+        return follow;
     }
 }

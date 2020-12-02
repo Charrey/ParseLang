@@ -2,6 +2,4 @@ GCD < SimpleExpression = 'gcd' WhiteSpace* '(' WhiteSpace* Expression a WhiteSpa
     ~if(b==0, a, gcd(b, a % b))
 }
 
-
-
-gcd(88, 99)
+~concat(['gcd of 88 and 99 is ', gcd(88, 99)])

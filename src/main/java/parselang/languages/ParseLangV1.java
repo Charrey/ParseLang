@@ -7,6 +7,9 @@ import java.util.List;
 
 import static parselang.parser.ParseRuleStorage.*;
 
+/**
+ * Fist iteration of the ParseLang base language
+ */
 public class ParseLangV1 implements Language {
 
 
@@ -97,6 +100,7 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("SafeSpecial").addRhs(term("(")));
         rules.add(new ParseRule("SafeSpecial").addRhs(term(")")));
         rules.add(new ParseRule("SafeSpecial").addRhs(term("{")));
+        rules.add(new ParseRule("SafeSpecial").addRhs(term(".")));
         rules.add(new ParseRule("SafeSpecial").addRhs(term("+")));
         rules.add(new ParseRule("SafeSpecial").addRhs(term("*")));
         rules.add(new ParseRule("SafeSpecial").addRhs(term("/")));
@@ -106,8 +110,7 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("SafeSpecial").addRhs(term("=")));
         rules.add(new ParseRule("SafeSpecial").addRhs(term("\"")));
 
-        rules.add(new ParseRule("SafeChar").addRhs(nonTerm("UpperOrLowerCase")));
-        rules.add(new ParseRule("SafeChar").addRhs(nonTerm("Number")));
+        rules.add(new ParseRule("SafeChar").addRhs(nonTerm("UpperOrLowerCaseOrNumber")));
         rules.add(new ParseRule("SafeChar").addRhs(nonTerm("SafeSpecial")));
         rules.add(new ParseRule("SafeChar").addRhs(nonTerm("WhiteSpace")));
 
@@ -142,8 +145,6 @@ public class ParseLangV1 implements Language {
 
         rules.add(new ParseRule("DelimitedSentence").addRhs(bound(nonTerm("Expression"), "e", false)));
 
-        rules.add(new ParseRule("BlockStat").addRhs(term("{"), ws(), bound(star(nonTerm("Sentence"), ws()), "e", true), ws(), term("}")));
-
         rules.add(new ParseRule("OptionalMinus").addRhs(term("-")));
         rules.add(new ParseRule("OptionalMinus"));
 
@@ -171,17 +172,17 @@ public class ParseLangV1 implements Language {
         rules.add(new ParseRule("SingleExpression").addRhs(bound(nonTerm("SimpleExpression"), "e", false), bound(star(term("["), ws(), nonTerm("Expression"), ws(), term("]")), "e2", false)));
 
         rules.add(new ParseRule("SimpleExpression").addRhs(term("("), ws(), bound(nonTerm("Expression"), "e", false), ws(), term(")")));
-        rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("NumberLiteral"), "e", false), ws()));
-        rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("StringLiteral"), "e", false), ws()));
-        rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("BooleanLiteral"), "e", false), ws()));
+        rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("NumberLiteral"), "e", false)));
+        rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("StringLiteral"), "e", false)));
+        rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("BooleanLiteral"), "e", false)));
         rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("ParameterName"), "e", false), ws()));
         rules.add(new ParseRule("SimpleExpression").addRhs(term("~concat"), ws(), term("("), ws(), bound(nonTerm("Expression"), "e", false), ws(), term(")"), ws()));
         rules.add(new ParseRule("SimpleExpression").addRhs(term("~if"), ws(), term("("), ws(), bound(nonTerm("Expression"), "e", false), ws(), term(","), ws(), bound(nonTerm("Expression"), "e2", false), ws(), term(","), ws(), bound(nonTerm("Expression"), "e3", false), ws(), term(")"), ws()));
         rules.add(new ParseRule("SimpleExpression").addRhs(term("~map")));
-        rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("Data"), "e", false), ws()));
-        rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("ListLiteral"), "e", false), ws()));
+        rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("Data"), "e", false)));
+        rules.add(new ParseRule("SimpleExpression").addRhs(bound(nonTerm("ListLiteral"), "e", false)));
 
-        rules.add(new ParseRule("ListLiteral").addRhs(term("["), ws(), term("]"), ws()));
+        rules.add(new ParseRule("ListLiteral").addRhs(term("["), ws(), term("]")));
         rules.add(new ParseRule("ListLiteral").addRhs(
                 term("["),
                 ws(),
@@ -192,9 +193,8 @@ public class ParseLangV1 implements Language {
 
 
         rules.add(new ParseRule("OptionalExpression").addRhs(bound(nonTerm("Expression"), "e", false)));
+        rules.add(new ParseRule("OptionalExpression"));
 
-        rules.add(new ParseRule("InsideOrOutside").addRhs(term("inside")));
-        rules.add(new ParseRule("InsideOrOutside").addRhs(term("outside")));
         rules.add(new ParseRule("Data").addRhs(term("~data"), bound(star(term("["), nonTerm("Expression"), term("]")), "e", false), ws(), nonTerm("OptionalAssignment")));
         rules.add(new ParseRule("OptionalAssignment").addRhs(term("="), ws(), bound(nonTerm("Expression"), "e", false)));
         rules.add(new ParseRule("OptionalAssignment"));

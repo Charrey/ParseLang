@@ -1,0 +1,48 @@
+
+
+VariableName > SimpleExpression = UpperOrLowerCase first UpperOrLowerCaseOrNumber* other {
+    ~data['variables'][~concat([first, ~concat(other)])];
+}
+
+StringDecl < DelimitedSentence = 'String ' UpperOrLowerCase first UpperOrLowerCaseOrNumber* other WhiteSpace* '=' WhiteSpace* Expression value {
+    ~data['variables'][~concat([first, ~concat(other)])] = value;
+}
+
+VariableAssignment < DelimitedSentence = UpperOrLowerCase first UpperOrLowerCaseOrNumber* other WhiteSpace* '=' WhiteSpace* Expression value {
+    ~data['variables'][~concat([first, ~concat(other)])] = value;
+}
+
+    Forloop < SimpleExpression = 'for'                      WhiteSpace*
+                                  '('                        WhiteSpace*
+                                  'int'                      WhiteSpace*
+                                  UpperOrLowerCase firsta UpperOrLowerCaseOrNumber* othera               WhiteSpace*
+                                  '='                        WhiteSpace*
+                                  Expression iteratorInit    WhiteSpace*
+                                  ';'                        WhiteSpace*
+                                  Expression condition'      WhiteSpace*
+                                  ';'                        WhiteSpace*
+                                  UpperOrLowerCase firstb UpperOrLowerCaseOrNumber* otherb               WhiteSpace*
+                                  '='                        WhiteSpace*
+                                  Expression updater'        WhiteSpace*
+                                  ')'                        WhiteSpace*
+                                  '{'                        WhiteSpace*
+                                  Sentence sentence'         WhiteSpace*
+                                  '}'                        WhiteSpace* {
+        ~data['variables'][~concat([firsta, ~concat(othera)])] = iteratorInit;
+        ~if(condition,
+            [sentence,
+            ~data['variables'][~concat([firstb, ~concat(otherb)])] = updater,
+            for (int i = ~data['variables'][~concat([firstb, ~concat(otherb)])]; condition; i = updater)  {
+                sentence;
+                }],0);
+    }
+
+FooExp < SimpleExpression = 'excited ' NumberLiteral b {
+    String result = 'hello';
+    for (int i = 0; i < b; i = i + 1) {
+        result = result + '!';
+    };
+    result;
+}
+
+excited 20

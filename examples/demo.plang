@@ -1,3 +1,9 @@
-FooExpression < SimpleExpression = Expression a {
-
+FooExp < SimpleExpression = 'excited ' NumberLiteral b {
+    String result = 'hello';
+    for (int i = 0; i < b; i = i + 1) {
+        result = result + '!';
+    };
+    result;
 }
+
+excited 20

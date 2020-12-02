@@ -4,43 +4,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Class representing maps in ParseLang
+ */
 public class PLMap extends PLData implements PLIndexable {
 
     private final Map<PLData, PLData> content = new HashMap<>();
 
-    public void put(PLData key, PLData value) {
+    /**
+     * @inheritDoc
+     */
+    @Override
+    public PLData get(PLData index) {
+        if (!content.containsKey(index)) {
+            set(index, new PLMap());
+        }
+        return content.get(index);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    @Override
+    public void set(PLData key, PLData value) {
         content.put(key, value);
     }
 
-    @Override
-    public PLData get(PLData key) {
-        if (!content.containsKey(key)) {
-            put(key, new PLMap());
-        }
-        return content.get(key);
-    }
-
-    @Override
-    public void set(PLData key, PLData value) {
-        put(key, value);
-    }
-
-    public PLData get(List<PLData> keys) {
-        final PLData[] current = {this};
-        keys.forEach(plData -> {
-            if (!(current[0] instanceof PLIndexable)) {
-                throw new IllegalArgumentException(plData.classString() +" cannot be indexed!");
-            } else {
-                current[0] = ((PLIndexable) current[0]).get(plData);
-            }
-        });
-        return current[0];
-    }
-
+    /**
+     * @inheritDoc
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -49,20 +43,25 @@ public class PLMap extends PLData implements PLIndexable {
         return content.equals(plMap.content);
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public int hashCode() {
         return Objects.hash(content);
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public String classString() {
         return "map";
     }
 
-    public boolean containsKey(PLData key) {
-        return content.containsKey(key);
-    }
-
+    /**
+     * @inheritDoc
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("{");
